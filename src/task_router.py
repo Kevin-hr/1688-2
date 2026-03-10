@@ -1,6 +1,7 @@
 import json
 import os
 from src.agents.web_scraper_agent import WebScraperAgent
+from src.utils.excel_exporter import ExcelExporter  # Excel 报表导出器
 
 class TaskRouter:
     """
@@ -8,6 +9,7 @@ class TaskRouter:
     """
     def __init__(self):
         self.scraper = WebScraperAgent()
+        self.exporter = ExcelExporter()  # 初始化 Excel 导出器
 
     async def route(self, task_input):
         """
@@ -41,11 +43,18 @@ class TaskRouter:
                 except Exception as e:
                     print(f"[Router] 获取链接 {url} 详情出错: {e}")
             
+            # 步骤 3: 导出 Excel 报表
+            excel_path = None
+            if results:
+                print(f"[Router] 正在导出 Excel 报表...")
+                excel_path = self.exporter.export(results)
+            
             return {
                 "status": "success",
                 "keyword": keyword,
                 "count": len(results),
-                "save_path": os.path.abspath("1688_products")
+                "save_path": os.path.abspath("1688_products"),
+                "excel_path": excel_path
             }
         except Exception as e:
             return {"status": "failed", "error": str(e)}
