@@ -1,37 +1,66 @@
+"""
+任务路由器 (Task Router) — v1.2.0
+-----------------------------------
+负责解析用户输入（自然语言指令或结构化参数），
+调用 WebScraperAgent 执行采集，
+最后通过 ExcelExporter 和 OzonTransformer 生成双格式输出。
+
+输出格式（每次采集）：
+  - 1688_products/{商品名}/detail.md      — Markdown 详情
+  - 1688_products/{商品名}/images/        — 商品图片
+  - 1688_products/*.xlsx                  — 格式化 Excel 报表
+  - 1688_products/ozon_export.json        — Ozon Global 标准 JSON
+"""
+
 import json
 import os
 from src.agents.web_scraper_agent import WebScraperAgent
-from src.utils.excel_exporter import ExcelExporter  # Excel 报表导出器
+from src.utils.excel_exporter import ExcelExporter       # Excel 报表导出器
+from src.utils.ozon_transformer import OzonTransformer   # Ozon 字段标准化转换器
+
 
 class TaskRouter:
     """
     任务路由器，负责解析用户输入并调用相应的 Agent 执行任务。
+    支持两种路由模式：
+      - route(instruction):     自然语言指令 → 关键词搜索
+      - route_url(url):         直接抓取单品详情页
     """
-    def __init__(self):
-        self.scraper = WebScraperAgent()
-        self.exporter = ExcelExporter()  # 初始化 Excel 导出器
 
-    async def route(self, task_input):
+    def __init__(self):
+        # 初始化各依赖模块
+        self.scraper = WebScraperAgent()
+        self.exporter = ExcelExporter()          # 初始化 Excel 导出器
+        self.transformer = OzonTransformer()     # 初始化 Ozon 转换器
+
+    async def route(self, task_input, limit=5):
         """
-        根据用户输入分发任务。
+        根据自然语言指令分发关键词搜索任务。
+
+        参数:
+            task_input: 用户输入的自然语言指令，如 "去1688搜索猫咪玩具"
+            limit: 最多采集的商品数量，默认 5
+
+        返回:
+            含有 status/count/save_path/excel_path/ozon_json_path 的结果字典
         """
         print(f"[Router] 正在解析任务: {task_input}")
-        
-        # 简单模拟关键字提取，实际场景中通常由 OpenClaw 的 LLM 预处理
+
+        # 简单关键字提取（后续可接 LLM 预处理）
         keyword = task_input.replace("去1688搜索", "").replace("搜索", "").strip()
-        
+
         if not keyword:
             return {"status": "failed", "error": "未提供搜索关键字"}
-        
-        print(f"[Router] 识别到关键字: {keyword}")
-        
+
+        print(f"[Router] 识别到关键字: {keyword}  |  采集上限: {limit}")
+
         try:
             # 步骤 1: 搜索获取链接列表
-            urls = await self.scraper.scrape_1688(keyword, limit=5)
-            
+            urls = await self.scraper.scrape_1688(keyword, limit=limit)
+
             if not urls:
                 return {"status": "failed", "error": "未找到相关商品链接"}
-                
+
             results = []
             # 步骤 2: 遍历链接并抓取深度详情
             for i, url in enumerate(urls):
@@ -42,27 +71,90 @@ class TaskRouter:
                         results.append(data)
                 except Exception as e:
                     print(f"[Router] 获取链接 {url} 详情出错: {e}")
-            
-            # 步骤 3: 导出 Excel 报表
-            excel_path = None
-            if results:
-                print(f"[Router] 正在导出 Excel 报表...")
-                excel_path = self.exporter.export(results)
-            
-            return {
-                "status": "success",
-                "keyword": keyword,
-                "count": len(results),
-                "save_path": os.path.abspath("1688_products"),
-                "excel_path": excel_path
-            }
+
+            return self._export_results(results, f"1688_{keyword[:10]}")
+
         except Exception as e:
             return {"status": "failed", "error": str(e)}
+
+    async def route_url(self, url):
+        """
+        直接根据指定 URL 采集单个商品详情（单品直抓模式）。
+
+        参数:
+            url: 1688 商品详情页 URL
+
+        返回:
+            含有 status/count/save_path/excel_path/ozon_json_path 的结果字典
+        """
+        print(f"[Router] [单品模式] 正在直抓: {url}")
+
+        try:
+            data = await self.scraper.scrape_product_detail(url)
+            if not data:
+                return {"status": "failed", "error": "详情页抓取失败，请检查 URL 或登录状态"}
+
+            return self._export_results([data], "1688_single")
+
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
+
+    def _export_results(self, results, filename_prefix="1688"):
+        """
+        将采集结果导出为 Excel 报表和 Ozon JSON 两种格式。
+
+        参数:
+            results: 采集到的商品字典列表
+            filename_prefix: Excel 文件名前缀
+
+        返回:
+            含有 status/count/save_path/excel_path/ozon_json_path 的结果字典
+        """
+        save_path = os.path.abspath("1688_products")
+        excel_path = None
+        ozon_json_path = None
+
+        if not results:
+            return {
+                "status": "success",
+                "count": 0,
+                "save_path": save_path,
+                "excel_path": None,
+                "ozon_json_path": None,
+                "warning": "未能成功采集到任何商品数据",
+            }
+
+        # 步骤 3: 导出 Excel 报表
+        try:
+            print(f"[Router] 正在导出 Excel 报表...")
+            excel_path = self.exporter.export(
+                results,
+                filename=f"{filename_prefix}_商品采集报表.xlsx"
+            )
+        except Exception as e:
+            print(f"[Router] Excel 导出失败: {e}")
+
+        # 步骤 4: 转换并导出 Ozon JSON
+        try:
+            print(f"[Router] 正在生成 Ozon Global 标准 JSON...")
+            ozon_products = self.transformer.transform_batch(results)
+            ozon_json_path = self.transformer.export_json(ozon_products)
+        except Exception as e:
+            print(f"[Router] Ozon JSON 导出失败: {e}")
+
+        return {
+            "status": "success",
+            "count": len(results),
+            "save_path": save_path,
+            "excel_path": excel_path,
+            "ozon_json_path": ozon_json_path,
+        }
+
 
 if __name__ == "__main__":
     import asyncio
     import sys
-    
+
     router = TaskRouter()
     user_input = sys.argv[1] if len(sys.argv) > 1 else "猫咪玩具"
     result = asyncio.run(router.route(user_input))
