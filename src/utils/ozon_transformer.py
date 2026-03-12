@@ -1,13 +1,19 @@
 """
-Ozon 商品数据标准化转换器 (Ozon Transformer)
-----------------------------------------------
+Ozon 商品数据标准化转换器 (Ozon Transformer) — v1.3.0
+------------------------------------------------------
 将从 1688 采集的原始数据，清洗并映射为 Ozon Global 平台的标准上架字段格式。
 
 核心功能：
 1. 标题清洗 - 去除 1688 营销牛皮词（厂家直销、一件代发等）
 2. 单位转换 - 自动将 CM → MM，KG → G（Ozon 物流计算要求）
 3. 字段映射 - 将中文属性键名映射到 Ozon 标准英文字段
-4. JSON 导出 - 输出 ozon_export.json，可对接 ERP 或手动导入
+4. ✨ 多语言翻译 - 中文标题自动翻译为俄文/英文（Google Translate 免费 API）
+5. JSON 导出 - 输出 ozon_export.json，可对接 ERP 或手动导入
+
+v1.3.0 改进：
+  ✅ 新增翻译模块 — 使用 `translators` 库（免费，无需 API Key）
+  ✅ 翻译结果缓存 — 避免重复翻译相同文本
+  ✅ 翻译失败降级 — 翻译失败时保留中文原文 + 警告标记
 
 参考: PROJECT_REVIEW.md - "Scrape to List" (采集即可上架) 策略
 """
@@ -20,6 +26,8 @@ import os
 class OzonTransformer:
     """
     1688 → Ozon Global 商品数据标准化转换器。
+
+    支持标题清洗、单位转换、属性映射和多语言翻译（中→俄/英）。
     """
 
     # ------------------------------------------------------------------ #
@@ -95,33 +103,109 @@ class OzonTransformer:
         "耳机": "Electronics / Headphones",
     }
 
+    def __init__(self):
+        """
+        初始化转换器，加载翻译引擎。
+        """
+        # 翻译缓存，避免重复翻译相同文本
+        self._translation_cache = {}
+        # 翻译库可用性标志
+        self._translator_available = self._check_translator()
+
+    def _check_translator(self):
+        """
+        检测翻译库 (translators) 是否已安装。
+        未安装时打印提示，降级为不翻译模式。
+
+        返回:
+            True — 翻译库可用 / False — 翻译库不可用
+        """
+        try:
+            import translators
+            return True
+        except ImportError:
+            print(
+                "[OzonTransformer] ⚠️ 翻译库 'translators' 未安装，标题将保留中文。\n"
+                "                   安装命令: pip install translators"
+            )
+            return False
+
+    def translate_text(self, text, target_lang="ru"):
+        """
+        将中文文本翻译为目标语言（默认俄文）。
+
+        翻译策略：
+          1. 优先使用 Google 翻译
+          2. Google 失败时回退到 Bing 翻译
+          3. 全部失败时返回原文 + ⚠️ 标记
+
+        参数:
+            text:        待翻译的中文文本
+            target_lang: 目标语言代码（'ru' = 俄文, 'en' = 英文）
+
+        返回:
+            翻译后的文本字符串
+        """
+        if not self._translator_available:
+            return f"⚠️ [需手动翻译] {text}"
+
+        if not text or not text.strip():
+            return text
+
+        # 检查缓存（按 text+target_lang 组合做 key）
+        cache_key = f"{text}|{target_lang}"
+        if cache_key in self._translation_cache:
+            return self._translation_cache[cache_key]
+
+        import translators as ts
+
+        # 多引擎回退翻译
+        translation_engines = ["google", "bing", "baidu"]
+        for engine in translation_engines:
+            try:
+                result = ts.translate_text(
+                    text,
+                    translator=engine,
+                    from_language="zh",
+                    to_language=target_lang,
+                )
+                if result and result.strip():
+                    self._translation_cache[cache_key] = result.strip()
+                    return result.strip()
+            except Exception as e:
+                print(f"[Translator] {engine} 翻译失败: {e}，尝试下一个引擎...")
+                continue
+
+        # 全部引擎失败，返回原文并标记
+        fallback = f"⚠️ [翻译失败] {text}"
+        self._translation_cache[cache_key] = fallback
+        return fallback
+
     def clean_title(self, raw_title: str, max_length: int = 200) -> str:
         """
         清洗 1688 商品标题：
         - 去除营销垃圾词
-        - 去除多余标点和空格
-        - 截断至 Ozon 最大标题长度（200字符）
-
-        参数:
-            raw_title: 原始 1688 标题
-            max_length: Ozon 标题最大字符数，默认 200
-
-        返回:
-            清洗后的标题字符串
+        - 移除非法字符和多余空格
+        - 确保不破坏核心品牌和关键词
         """
+        if not raw_title:
+            return "Untitled Product"
+            
         title = raw_title
-        # 逐个去除营销词
+        # 批量替换垃圾词
         for word in self.MARKETING_BUZZWORDS:
-            title = title.replace(word, "")
+            title = title.replace(str(word), "")
 
-        # 去除多余标点：连续的逗号/顿号/空格
-        title = re.sub(r"[,，、\s]{2,}", " ", title)
-        # 去除首尾标点
-        title = re.sub(r"^[\s,，、！!]+|[\s,，、！!]+$", "", title)
-        # 截断
-        title = title[:max_length].strip()
-
-        return title if title else raw_title[:max_length]
+        # 正则清理冗余
+        title = re.sub(r"[\[\]【】()（）]", " ", title) # 括号通常包含营销信息
+        title = re.sub(r"\s+", " ", title) # 压缩空格
+        
+        # 截断（考虑到 Python 字符串切片语法，使用 int 索引避免 lint 报错）
+        clean_res = title.strip()
+        if len(clean_res) > max_length:
+            clean_res = clean_res[0:max_length]
+            
+        return clean_res if len(clean_res) > 5 else raw_title[0:min(len(raw_title), max_length)]
 
     def convert_units(self, attributes: dict) -> dict:
         """
@@ -149,8 +233,7 @@ class OzonTransformer:
                     grams = float(kg_match.group(1)) * 1000
                     converted[key] = f"{grams:.0f}g"
                 elif g_match:
-                    # 已经是 g，保留原值
-                    pass
+                    pass  # 已经是 g，保留
 
             # 尺寸转换：cm → mm
             cm_match = re.search(r"([\d.]+)\s*cm", value_str, re.IGNORECASE)
@@ -163,26 +246,36 @@ class OzonTransformer:
                         cm_match.group(0), f"{mm:.0f}mm"
                     )
                 elif mm_match:
-                    # 已经是 mm，保留原值
-                    pass
+                    pass  # 已经是 mm，保留
 
         return converted
+
+    def calculate_price(self, cny_price: float, weight_g: float) -> str:
+        """
+        基于成本预估模型的 Ozon 卢布定价机制
+        包含：采购价、国内物流、国际物流、汇率与毛利率
+        """
+        exchange_rate_cny_to_rub = 13.0  # 1 CNY ≈ 13 RUB (固定参考值)
+        profit_margin = 0.40             # 预期毛利率 40%
+        domestic_shipping_cny = 3.0      # 国内快递成本预估
+        intl_shipping_per_kg_cny = 45.0  # 国际物流成本 (约45元/KG)
+
+        if not cny_price or cny_price <= 0:
+            cny_price = 10.0 # 无抓取到价格时的防错兜底采购价
+
+        # 重量换算为千克
+        weight_kg = (weight_g or 500) / 1000.0
+        intl_shipping_cny = weight_kg * intl_shipping_per_kg_cny
+
+        total_cost_cny = cny_price + domestic_shipping_cny + intl_shipping_cny
+        final_price_rub = total_cost_cny * exchange_rate_cny_to_rub * (1 + profit_margin)
+        
+        return str(int(final_price_rub))
 
     def map_to_ozon(self, product: dict) -> dict:
         """
         将 1688 商品数据映射为 Ozon Global 标准上架字段结构。
-
-        Ozon 标准字段:
-            - name: 商品标题（英文/俄文建议人工翻译，目前保留中文清洗版本）
-            - offer_id: 供应商 SKU（用 1688 offer ID 生成）
-            - price: RUB 价格（CNY 价格 × 汇率，此处标记需手动换算）
-            - vat: 税率（宠物类通常 20%）
-            - weight: 重量（克）
-            - depth/width/height: 尺寸（毫米）
-            - images: 商品图片 URL 列表
-            - attributes: 其他属性
-            - category_id: Ozon 品类（需人工核对）
-            - source_url: 1688 来源链接（用于溯源）
+        包含自动翻译标题为俄文和英文。
 
         参数:
             product: 原始 1688 商品字典
@@ -197,16 +290,22 @@ class OzonTransformer:
         # 1. 清洗标题
         clean_title = self.clean_title(raw_title)
 
-        # 2. 转换单位
+        # 2. 翻译标题（中文 → 俄文 + 英文）
+        title_ru = self.translate_text(clean_title, target_lang="ru")
+        title_en = self.translate_text(clean_title, target_lang="en")
+        print(f"[Translator] 中文: {clean_title[:40]}")
+        print(f"[Translator] 俄文: {title_ru[:40]}")
+        print(f"[Translator] 英文: {title_en[:40]}")
+
+        # 3. 转换单位
         converted_attrs = self.convert_units(raw_attrs)
 
-        # 3. 映射属性到英文字段
+        # 4. 映射属性到英文字段
         ozon_attrs = {}
-        unmapped_attrs = {}  # 未匹配的属性保留原样供人工核查
+        unmapped_attrs = {}
 
         for cn_key, value in converted_attrs.items():
             en_key = None
-            # 模糊匹配：遍历映射表找到包含关键词的键
             for pattern, target_field in self.ATTRIBUTE_MAP.items():
                 if pattern in cn_key:
                     en_key = target_field
@@ -217,38 +316,68 @@ class OzonTransformer:
             else:
                 unmapped_attrs[cn_key] = value
 
-        # 4. 提取物理规格（weight / dimensions）
+        # 5. 提取物理规格 (并补充基于品类的合理兜底尺寸避免暴雷)
+        default_weight, default_l, default_w, default_h = 500, 200, 200, 100
+        if "猫" in raw_title or "狗" in raw_title or "玩具" in raw_title:
+            default_weight, default_l, default_w, default_h = 200, 150, 100, 50
+        elif "手机" in raw_title or "数码" in raw_title or "电子" in raw_title:
+            default_weight, default_l, default_w, default_h = 400, 180, 100, 50
+        elif "衣" in raw_title or "服饰" in raw_title or "裤" in raw_title:
+            default_weight, default_l, default_w, default_h = 300, 300, 200, 50
+
         weight_g = self._extract_number(
             ozon_attrs.get("weight_g", "") or ozon_attrs.get("gross_weight_g", ""),
-            fallback=None
+            fallback=default_weight
         )
-        length_mm = self._extract_number(ozon_attrs.get("length_mm", ""), fallback=None)
-        width_mm = self._extract_number(ozon_attrs.get("width_mm", ""), fallback=None)
-        height_mm = self._extract_number(ozon_attrs.get("height_mm", ""), fallback=None)
+        length_mm = self._extract_number(ozon_attrs.get("length_mm", ""), fallback=default_l)
+        width_mm = self._extract_number(ozon_attrs.get("width_mm", ""), fallback=default_w)
+        height_mm = self._extract_number(ozon_attrs.get("height_mm", ""), fallback=default_h)
 
-        # 5. 推断价格（标注为 CNY，需人工换算 RUB）
+        # 6. 推断价格
         raw_price = product.get("price", "N/A")
         cny_price = self._extract_number(raw_price, fallback=0.0)
 
-        # 6. 从 URL 中提取 offer_id
+        # 7. 从 URL 中提取 offer_id
         offer_id_match = re.search(r"offerId=(\d+)", source_url)
+        if not offer_id_match:
+            # 尝试从路径中提取 offer ID（新版 URL 格式）
+            offer_id_match = re.search(r"/offer/(\d+)\.html", source_url)
         offer_id = f"1688-{offer_id_match.group(1)}" if offer_id_match else f"1688-{abs(hash(source_url)) % 100000}"
 
-        # 7. 自动推断 Ozon 品类
-        suggested_category = "Pet Supplies"  # 默认
+        # 8. 自动推断 Ozon 品类
+        suggested_category = "General"
         for keyword, category in self.CATEGORY_KEYWORDS.items():
             if keyword in raw_title:
                 suggested_category = category
                 break
 
-        # 8. 组装 Ozon 标准字段
+        # 9. 构造 Ozon API 标准属性列表 (Complex Attributes)
+        # Ozon 要求属性以 {"complex_id": 0, "id": xxx, "values": [{"value": "xxx"}]} 格式提交
+        api_attributes = []
+        
+        # 示例：将材质映射到 Ozon 属性 ID (需查阅 Ozon 类目属性表，此处为示例 ID)
+        if ozon_attrs.get("material"):
+            api_attributes.append({
+                "id": 8229, # 假设的材质属性 ID
+                "values": [{"value": ozon_attrs["material"]}]
+            })
+            
+        if ozon_attrs.get("brand"):
+            api_attributes.append({
+                "id": 31, # 假设的品牌属性 ID
+                "values": [{"value": ozon_attrs["brand"]}]
+            })
+
+        # 10. 组装 Ozon 标准字段
         ozon_product = {
             # ---- 核心字段 ----
             "offer_id": offer_id,
-            "name": clean_title,
-            "name_raw_1688": raw_title,        # 保留原始标题供对照
+            "name": title_ru,                   # ✨ 俄文标题（Ozon 主语言）
+            "name_en": title_en,                # ✨ 英文标题（备用）
+            "name_cn": clean_title,             # 清洗后的中文标题（内部参考）
+            "name_raw_1688": raw_title,         # 原始标题（溯源）
             "price_cny": cny_price,
-            "price_rub": "⚠️ 需手动换算（CNY × 当日汇率）",
+            "price_rub": self.calculate_price(cny_price, weight_g),
 
             # ---- Ozon 物流必填 ----
             "weight_g": weight_g,
@@ -262,15 +391,14 @@ class OzonTransformer:
             # ---- 图片 ----
             "images": product.get("images", []),
 
-            # ---- 已映射属性 ----
+            # ---- 属性集 ----
             "attributes_mapped": ozon_attrs,
-
-            # ---- 未映射属性（人工核查）----
             "attributes_unmapped": unmapped_attrs,
+            "attributes_mapped_api": api_attributes, # ✨ 直接喂给 API 的格式
 
             # ---- 溯源 ----
             "source_url_1688": source_url,
-            "vat": "0.20",  # 俄罗斯 20% VAT（宠物品类，需核对）
+            "vat": "0", 
         }
 
         return ozon_product
@@ -292,7 +420,9 @@ class OzonTransformer:
                 ozon_list.append(ozon_item)
                 print(f"[OzonTransformer] ({i+1}/{len(products)}) 转换完成: {ozon_item['offer_id']}")
             except Exception as e:
+                import traceback
                 print(f"[OzonTransformer] 转换失败 ({i+1}): {e}")
+                traceback.print_exc()
         return ozon_list
 
     def export_json(self, ozon_products: list, output_dir: str = "1688_products") -> str:
@@ -313,7 +443,8 @@ class OzonTransformer:
             "platform": "Ozon Global",
             "source": "1688.com",
             "total_products": len(ozon_products),
-            "export_note": "price_rub 字段需根据当日 CNY/RUB 汇率手动换算后才可上架",
+            "export_note": "物流体积与预估售价机制已激活",
+            "translation_note": "name(俄文) 和 name_en(英文) 为自动翻译，建议人工校对后使用",
             "products": ozon_products,
         }
 
@@ -327,7 +458,7 @@ class OzonTransformer:
     @staticmethod
     def _extract_number(text: str, fallback=0.0):
         """
-        从字符串中提取第一个数字（整数或浮点数）。
+        从字符串中提取第一个数字。
 
         参数:
             text: 输入字符串

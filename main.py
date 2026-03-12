@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-1688 AI 自动化采集 Agent — 主入口 (v1.2.0)
+1688 AI 自动化采集 Agent — 主入口 (v1.3.0)
 -------------------------------------------
 支持两种模式：
   1. 关键词批量搜索模式：python main.py --keyword "猫玩具" --limit 5
@@ -15,6 +16,21 @@
 import asyncio
 import argparse
 import os
+import sys
+import io
+
+# 修复 Windows 控制台 UTF-8 编码问题
+if sys.platform == "win32":
+    try:
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding="utf-8", errors="replace"
+        )
+    except Exception:
+        pass
+
 from src.task_router import TaskRouter
 
 
@@ -38,33 +54,32 @@ def parse_args():
 
   # 传统指令模式 (兼容旧版)
   python main.py "去1688搜索猫咪玩具"
-        """
+        """,
     )
 
     parser.add_argument(
-        "--keyword", "-k",
-        type=str,
-        default=None,
-        help="搜索关键词，例如: '猫玩具'"
+        "--keyword", "-k", type=str, default=None, help="搜索关键词，例如: '猫玩具'"
     )
     parser.add_argument(
-        "--url", "-u",
+        "--url",
+        "-u",
         type=str,
         default=None,
-        help="1688 商品详情页 URL（单品直抓模式）"
+        help="1688 商品详情页 URL（单品直抓模式）",
     )
     parser.add_argument(
-        "--limit", "-n",
+        "--limit",
+        "-n",
         type=int,
         default=5,
-        help="关键词模式下最多采集的商品数量，默认 5"
+        help="关键词模式下最多采集的商品数量，默认 5",
     )
     # 兼容旧版：第一个位置参数作为自然语言指令
     parser.add_argument(
         "instruction",
         nargs="?",
         default=None,
-        help="自然语言指令（兼容旧版），例如: '去1688搜索猫咪玩具'"
+        help="自然语言指令（兼容旧版），例如: '去1688搜索猫咪玩具'",
     )
 
     return parser.parse_args()

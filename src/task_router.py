@@ -1,9 +1,13 @@
 """
-任务路由器 (Task Router) — v1.2.0
+任务路由器 (Task Router) — v1.3.0
 -----------------------------------
 负责解析用户输入（自然语言指令或结构化参数），
 调用 WebScraperAgent 执行采集，
 最后通过 ExcelExporter 和 OzonTransformer 生成双格式输出。
+
+v1.3.0 改进：
+  ✅ 使用 async with 管理 WebScraperAgent 的单一浏览器 Session
+  ✅ 搜索 + 详情抓取全程复用同一个浏览器，消除重复启停开销
 
 输出格式（每次采集）：
   - 1688_products/{商品名}/detail.md      — Markdown 详情
@@ -33,16 +37,10 @@ class TaskRouter:
         self.exporter = ExcelExporter()          # 初始化 Excel 导出器
         self.transformer = OzonTransformer()     # 初始化 Ozon 转换器
 
-    async def route(self, task_input, limit=5):
+    async def route(self, task_input, limit=5, sort_type=None):
         """
         根据自然语言指令分发关键词搜索任务。
-
-        参数:
-            task_input: 用户输入的自然语言指令，如 "去1688搜索猫咪玩具"
-            limit: 最多采集的商品数量，默认 5
-
-        返回:
-            含有 status/count/save_path/excel_path/ozon_json_path 的结果字典
+        使用 async with 管理单一浏览器 Session
         """
         print(f"[Router] 正在解析任务: {task_input}")
 
@@ -52,26 +50,29 @@ class TaskRouter:
         if not keyword:
             return {"status": "failed", "error": "未提供搜索关键字"}
 
-        print(f"[Router] 识别到关键字: {keyword}  |  采集上限: {limit}")
+        print(f"[Router] 识别到关键字: {keyword}  |  采集上限: {limit} |  排序: {sort_type or '默认'}")
 
         try:
-            # 步骤 1: 搜索获取链接列表
-            urls = await self.scraper.scrape_1688(keyword, limit=limit)
+            # 使用 async with 管理单一浏览器 Session
+            async with self.scraper as agent:
+                # 步骤 1: 搜索获取链接列表
+                urls = await agent.scrape_1688(keyword, limit=limit, sort_type=sort_type)
 
-            if not urls:
-                return {"status": "failed", "error": "未找到相关商品链接"}
+                if not urls:
+                    return {"status": "failed", "error": "未找到相关商品链接"}
 
-            results = []
-            # 步骤 2: 遍历链接并抓取深度详情
-            for i, url in enumerate(urls):
-                print(f"[Router] 正在处理第 ({i+1}/{len(urls)}) 个商品详情...")
-                try:
-                    data = await self.scraper.scrape_product_detail(url)
-                    if data:
-                        results.append(data)
-                except Exception as e:
-                    print(f"[Router] 获取链接 {url} 详情出错: {e}")
+                results = []
+                # 步骤 2: 遍历链接并抓取深度详情（复用同一浏览器）
+                for i, url in enumerate(urls):
+                    print(f"[Router] 正在处理第 ({i+1}/{len(urls)}) 个商品详情...")
+                    try:
+                        data = await agent.scrape_product_detail(url)
+                        if data:
+                            results.append(data)
+                    except Exception as e:
+                        print(f"[Router] 获取链接 {url} 详情出错: {e}")
 
+            # 浏览器在 async with 退出时自动关闭
             return self._export_results(results, f"1688_{keyword[:10]}")
 
         except Exception as e:
@@ -90,9 +91,10 @@ class TaskRouter:
         print(f"[Router] [单品模式] 正在直抓: {url}")
 
         try:
-            data = await self.scraper.scrape_product_detail(url)
-            if not data:
-                return {"status": "failed", "error": "详情页抓取失败，请检查 URL 或登录状态"}
+            async with self.scraper as agent:
+                data = await agent.scrape_product_detail(url)
+                if not data:
+                    return {"status": "failed", "error": "详情页抓取失败，请检查 URL 或登录状态"}
 
             return self._export_results([data], "1688_single")
 
