@@ -92,6 +92,66 @@ python main.py "去1688搜索猫咪玩具"
 | v1.0.0 | 2026-03 | 基础搜索 + 图片下载 + Markdown 报告 |
 | v1.1.0 | 2026-03-10 | Excel 格式化导出 + 样例生成脚本 |
 | v1.2.0 | 2026-03-10 | **OzonTransformer（标题清洗/单位转换/字段映射）+ 双模式参数 + ozon_export.json** |
+| v1.3.1 | 2026-03-14 | **Ozon API 改进**：添加重试机制(3次+指数退避)、日志记录、进度条、异常抛出 |
+
+## API 使用 (Python)
+
+### 方式一：统一 API (推荐)
+
+```python
+from src import Ali1688API
+
+api = Ali1688API()
+
+# 关键词搜索
+result = await api.search("猫玩具", limit=5)
+
+# URL 直抓
+result = await api.scrape_url("https://detail.1688.com/offer/xxx.html")
+
+# 导出 Excel
+excel_path = api.export_excel(products, "output.xlsx")
+
+# 转换为 Ozon 格式
+ozon_products = api.to_ozon(products)
+```
+
+### 方式二：便捷函数
+
+```python
+from src import search, scrape_url, export_excel, to_ozon
+
+# 直接调用
+result = await search("猫玩具", limit=3)
+ozon = to_ozon(products)
+```
+
+## CLI 使用
+
+```bash
+# 关键词搜索
+python cli.py search -k "猫玩具" -n 5
+
+# URL 直抓
+python cli.py scrape -u "https://detail.1688.com/offer/xxx.html"
+
+# 转换为 Ozon 格式
+python cli.py convert -i input.json -o ozon_export.json
+
+# 导出为 Excel
+python cli.py export -i input.json -o output.xlsx
+```
+
+## 模块列表
+
+| 模块 | 路径 | 功能 |
+|------|------|------|
+| `Ali1688API` | `src/api.py` | 统一 API 封装 |
+| `TaskRouter` | `src/task_router.py` | 任务路由 |
+| `WebScraperAgent` | `src/agents/web_scraper_agent.py` | 网页抓取 |
+| `ExcelExporter` | `src/utils/excel_exporter.py` | Excel 导出 |
+| `OzonTransformer` | `src/utils/ozon_transformer.py` | Ozon 转换 |
+| `FileManager` | `src/utils/file_manager.py` | 文件管理 |
 
 ## 注意事项 (Notes)
 
