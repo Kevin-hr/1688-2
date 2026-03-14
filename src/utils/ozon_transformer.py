@@ -91,6 +91,21 @@ class OzonTransformer:
     }
 
     # ------------------------------------------------------------------ #
+    # Ozon 标准属性 ID 映射 (v1.4.0 增强)
+    # 用于直接构造 API 负载中的 attributes 列表
+    # ------------------------------------------------------------------ #
+    OZON_ATTRIBUTE_IDS = {
+        "brand": 31,                # 品牌
+        "material": 8229,           # 材质
+        "color": 10091,             # 颜色
+        "target_audience": 9163,    # 目标人群
+        "type": 8229,               # 类型 (通常与材质公用或动态查表)
+        "model": 77,                # 型号
+        "origin_country": 4389,     # 原产国 (通常设为 "China")
+        "package_qty": 84,          # 包装件数
+    }
+
+    # ------------------------------------------------------------------ #
     # Ozon 品类关键词映射（根据商品标题自动推断品类）
     # ------------------------------------------------------------------ #
     CATEGORY_KEYWORDS = {
@@ -355,18 +370,27 @@ class OzonTransformer:
         # Ozon 要求属性以 {"complex_id": 0, "id": xxx, "values": [{"value": "xxx"}]} 格式提交
         api_attributes = []
         
-        # 示例：将材质映射到 Ozon 属性 ID (需查阅 Ozon 类目属性表，此处为示例 ID)
-        if ozon_attrs.get("material"):
-            api_attributes.append({
-                "id": 8229, # 假设的材质属性 ID
-                "values": [{"value": ozon_attrs["material"]}]
-            })
-            
-        if ozon_attrs.get("brand"):
-            api_attributes.append({
-                "id": 31, # 假设的品牌属性 ID
-                "values": [{"value": ozon_attrs["brand"]}]
-            })
+        # 遍历已知的映射 ID 进行增强填充
+        known_mappings = {
+            "material": self.OZON_ATTRIBUTE_IDS.get("material"),
+            "brand": self.OZON_ATTRIBUTE_IDS.get("brand"),
+            "color": self.OZON_ATTRIBUTE_IDS.get("color"),
+            "model": self.OZON_ATTRIBUTE_IDS.get("model"),
+        }
+
+        for attr_key, attr_id in known_mappings.items():
+            val = ozon_attrs.get(attr_key)
+            if val and attr_id:
+                api_attributes.append({
+                    "id": attr_id,
+                    "values": [{"value": str(val)}]
+                })
+
+        # 默认必填项补全 (原产国)
+        api_attributes.append({
+            "id": self.OZON_ATTRIBUTE_IDS.get("origin_country", 4389),
+            "values": [{"value": "China"}]
+        })
 
         # 10. 组装 Ozon 标准字段
         ozon_product = {

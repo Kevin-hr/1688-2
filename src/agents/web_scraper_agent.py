@@ -18,8 +18,10 @@ v1.3.0 改进重点：
 import asyncio  # 异步 IO 库，用于 await/async 协程
 import os  # 操作系统接口，用于目录检查和创建
 import urllib.parse  # URL 编码库
+import random  # 随机库，用于反检测
 from playwright.async_api import async_playwright  # Playwright 异步 API
 from src.utils.file_manager import FileManager  # 本地文件/图片管理器
+from src.modules.anti_detect import AntiDetectConfig, get_anti_detect_config  # 反检测配置
 
 
 class WebScraperAgent:
@@ -147,29 +149,46 @@ class WebScraperAgent:
     # 生命周期管理（支持 async with 和手动管理两种方式）
     # ================================================================== #
 
-    async def start(self):
+    async def start(self, use_anti_detect: bool = True):
         """
         启动 Playwright 浏览器并创建持久化上下文。
         整个采集周期只调用一次，后续搜索和详情页复用同一个浏览器实例。
+
+        Args:
+            use_anti_detect: 是否启用反检测（默认启用）
         """
         if self._context is not None:
             print("[Scraper] 浏览器已在运行，跳过重复启动。")
             return
 
         print("[Scraper] 正在启动 Playwright 浏览器（单一 Session 模式）...")
+
+        # 获取反检测配置
+        anti_config = get_anti_detect_config() if use_anti_detect else AntiDetectConfig()
+        context_options = anti_config.get_context_options()
+        launch_args = anti_config.get_launch_args()
+
         self._playwright = await async_playwright().start()
+
+        # 使用反检测配置创建浏览器上下文
         self._context = await self._playwright.chromium.launch_persistent_context(
             user_data_dir=self.user_data_dir,
             headless=True,  # 无头模式，降低资源消耗
-            user_agent=(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            ),
-            args=["--disable-blink-features=AutomationControlled"],  # 规避自动化特征
+            user_agent=context_options.get("user_agent"),
+            viewport=context_options.get("viewport"),
+            locale=context_options.get("locale"),
+            timezone_id=context_options.get("timezone_id"),
+            languages=context_options.get("languages"),
+            args=launch_args,
         )
+
         self._page = await self._context.new_page()
-        print("[Scraper] ✅ 浏览器已启动。")
+
+        # 注入反检测脚本
+        if use_anti_detect:
+            await self._page.add_init_script(anti_config.add_human_behavior(page=None)["script"])
+
+        print("[Scraper] ✅ 浏览器已启动（反检测已启用）。")
 
     async def close(self):
         """
