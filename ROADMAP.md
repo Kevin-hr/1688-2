@@ -12,16 +12,34 @@
 
 | 模块 | 路径 | 功能描述 | 状态 |
 |------|------|---------|------|
-| **主入口** | `main.py` | 命令行入口，支持关键词搜索/URL直抓两种模式 | ✅ 完成 |
-| **任务路由** | `src/task_router.py` | 解析用户输入，调度采集和导出流程 | ✅ 完成 |
-| **网页抓取** | `src/agents/web_scraper_agent.py` | Playwright 驱动浏览器，自动登录+搜索+详情抓取 | ✅ 完成 |
-| **文件管理** | `src/utils/file_manager.py` | 创建目录结构，保存 Markdown 详情，多线程下载图片 | ✅ 完成 |
-| **Ozon 转换** | `src/utils/ozon_transformer.py` | 标题清洗、单位转换、字段映射、翻译、JSON导出 | ✅ 完成 |
-| **Excel 导出** | `src/utils/excel_exporter.py` | 格式化 Excel 报表（深蓝表头、斑马纹、自适应列宽） | ✅ 完成 |
-| **1688 登录** | `login_1688.py` | 手动扫码登录，持久化 Cookie | ✅ 完成 |
-| **统一API** | `src/api.py` | Ali1688API 封装所有功能 | ✅ 完成 |
-| **CLI工具** | `cli.py` | 命令行接口 | ✅ 完成 |
-| **包初始化** | `src/__init__.py` | 统一导出模块 | ✅ 完成 |
+| **主入口** | `main.py` | 命令行入口 | ✅ |
+| **CLI工具** | `cli.py` | 命令行接口 | ✅ |
+| **统一API** | `src/api.py` | Ali1688API 封装 | ✅ |
+| **任务路由** | `src/task_router.py` | 解析输入，调度流程 | ✅ |
+| **网页抓取** | `src/agents/web_scraper_agent.py` | Playwright 浏览器自动化 | ⚠️ 反爬问题 |
+| **文件管理** | `src/utils/file_manager.py` | 目录结构，图片下载 | ✅ |
+| **Ozon 转换** | `src/utils/ozon_transformer.py` | 标题清洗、单位转换、翻译、JSON导出 | ✅ |
+| **Excel 导出** | `src/utils/excel_exporter.py` | 格式化报表 | ✅ |
+| **1688 登录** | `login_1688.py` | 手动扫码登录 | ✅ |
+
+---
+
+## 最小子模块 (`src/modules/`)
+
+每个子模块独立封装，可单独使用：
+
+| # | 模块 | 功能 | 状态 |
+|---|------|------|------|
+| 1 | `filename_sanitizer.py` | 文件名清洗 | ✅ |
+| 2 | `title_cleaner.py` | 标题清洗(去除营销词) | ✅ |
+| 3 | `unit_converter.py` | 单位转换(CM→MM, KG→G) | ✅ |
+| 4 | `translator.py` | 翻译(中→俄/英) | ✅ |
+| 5 | `price_calculator.py` | Ozon价格计算 | ✅ |
+| 6 | `image_downloader.py` | 图片下载(多线程+重试) | ✅ |
+| 7 | `field_mapper.py` | 字段映射 | ✅ |
+| 8 | `dir_creator.py` | 目录创建 | ✅ |
+| 9 | `detail_saver.py` | 详情保存(Markdown) | ✅ |
+| 10 | `excel_styler.py` | Excel样式 | ✅ |
 
 ---
 
@@ -29,54 +47,15 @@
 
 | 功能 | 状态 | 说明 |
 |------|------|------|
-| Excel 导出 | ✅ 通过 | 格式化Excel生成成功 |
-| Ozon JSON 转换 | ✅ 通过 | 标题清洗、翻译(中→俄/英)、单位转换正常 |
-| 文件管理 | ✅ 通过 | 目录创建、文件名清洗、详情保存正常 |
-| 统一API封装 | ✅ 通过 | Ali1688API 类正常工作 |
-| CLI工具 | ✅ 通过 | search/scrape/convert/export 命令正常 |
-| 关键词搜索 | ❌ 失败 | 1688 反爬虫检测触发，返回"系统错误" |
-| URL 直抓 | ❌ 失败 | 同上，需登录后测试 |
-| 图片下载 | ⏳ 待爬虫成功后测试 | 历史数据中images目录为空 |
-
----
-
-## 已封装的功能
-
-### 1. Python API
-
-```python
-from src import Ali1688API
-
-api = Ali1688API()
-
-# 关键词搜索
-result = await api.search("猫玩具", limit=5)
-
-# URL 直抓
-result = await api.scrape_url("https://detail.1688.com/offer/xxx.html")
-
-# 导出 Excel
-excel_path = api.export_excel(products, "output.xlsx")
-
-# 转换为 Ozon 格式
-ozon_products = api.to_ozon(products)
-```
-
-### 2. CLI 命令
-
-```bash
-# 关键词搜索
-python cli.py search -k "猫玩具" -n 5
-
-# URL 直抓
-python cli.py scrape -u "https://detail.1688.com/offer/xxx.html"
-
-# 转换为 Ozon 格式
-python cli.py convert -i input.json -o ozon_export.json
-
-# 导出为 Excel
-python cli.py export -i input.json -o output.xlsx
-```
+| Excel 导出 | ✅ | 格式化Excel生成成功 |
+| Ozon JSON 转换 | ✅ | 标题清洗、翻译(中→俄/英)、单位转换正常 |
+| 文件管理 | ✅ | 目录创建、文件名清洗、详情保存正常 |
+| 统一API封装 | ✅ | Ali1688API 类正常工作 |
+| CLI工具 | ✅ | search/scrape/convert/export 命令正常 |
+| 最小子模块 | ✅ | 10个子模块全部测试通过 |
+| 关键词搜索 | ❌ | 1688 反爬虫检测触发 |
+| URL 直抓 | ❌ | 同上 |
+| 图片下载 | ⏳ | 需爬虫成功后测试 |
 
 ---
 
@@ -99,41 +78,14 @@ python cli.py export -i input.json -o output.xlsx
 
 ---
 
-## 阶段完成情况
-
-### Phase 1: 功能排查与测试
-- [x] Excel 导出测试
-- [x] Ozon JSON 转换测试
-- [x] 文件管理功能测试
-- [x] API 封装测试
-- [x] CLI 工具测试
-- [x] 关键词搜索测试（发现反爬问题）
-- [ ] URL 直抓测试（需登录）
-- [ ] 图片下载测试（需爬虫成功）
-
-### Phase 2: 封装与优化
-- [x] 统一 API 封装 (src/api.py)
-- [x] CLI 工具封装 (cli.py)
-- [x] 模块统一导出 (src/__init__.py)
-- [ ] 添加单元测试
-- [ ] 优化代码结构
-- [ ] 增加错误处理
-
-### Phase 3: 文档完善
-- [x] 更新 README.md（添加API和CLI使用说明）
-- [ ] 详细 API 文档
-- [ ] 使用教程
-
----
-
 ## 里程碑
 
 | 里程碑 | 目标 | 状态 |
 |--------|------|------|
-| M1 | 所有功能排查测试完成 | 🔄 85% |
-| M2 | 反爬问题解决 | ⏳ 待开始 |
-| M3 | 模块封装完成 | ✅ 完成 |
-| M4 | 文档完善完成 | 🔄 进行中 |
+| M1 | 最小子模块拆分封装 | ✅ 完成 |
+| M2 | API和CLI封装 | ✅ 完成 |
+| M3 | 反爬问题解决 | ⏳ 待开始 |
+| M4 | 文档完善 | 🔄 进行中 |
 
 ---
 
@@ -145,7 +97,6 @@ python cli.py export -i input.json -o output.xlsx
 | 数据处理 | pandas, openpyxl |
 | 翻译 | translators |
 | 异步 | asyncio |
-| 持久化 | JSON, Excel |
 
 ---
 
@@ -153,4 +104,3 @@ python cli.py export -i input.json -o output.xlsx
 
 - `README.md` - 项目完整文档
 - `PROJECT_REVIEW.md` - 专业阶段项目回顾
-- `docs/MVP_DELIVERY_PLAN.md` - MVP 交付计划

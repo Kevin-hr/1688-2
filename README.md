@@ -20,6 +20,10 @@
   - 输出结构化 `ozon_export.json`
 - 📊 **格式化 Excel 报表**：深蓝表头、斑马纹、自适应列宽、冻结首行
 - 🛡️ **反检测登录**：Playwright 持久化 Cookie，无需重复扫码
+- ⚡ **API 可靠性** (v1.3.1+)：
+  - 3次重试 + 指数退避
+  - 日志记录 (`logs/ozon_api.log`)
+  - 进度条显示
 
 ## 安装与配置 (Installation)
 
@@ -92,7 +96,8 @@ python main.py "去1688搜索猫咪玩具"
 | v1.0.0 | 2026-03 | 基础搜索 + 图片下载 + Markdown 报告 |
 | v1.1.0 | 2026-03-10 | Excel 格式化导出 + 样例生成脚本 |
 | v1.2.0 | 2026-03-10 | **OzonTransformer（标题清洗/单位转换/字段映射）+ 双模式参数 + ozon_export.json** |
-| v1.3.1 | 2026-03-14 | **Ozon API 改进**：添加重试机制(3次+指数退避)、日志记录、进度条、异常抛出 |
+| v1.3.0 | 2026-03-14 | **统一API封装** + MCP服务器支持 + 模块化重构 |
+| v1.3.1 | 2026-03-14 | **Ozon API 改进**：添加重试机制(3次+指数退避)、日志记录(logs/ozon_api.log)、进度条、异常抛出 |
 
 ## API 使用 (Python)
 
@@ -142,6 +147,45 @@ python cli.py convert -i input.json -o ozon_export.json
 python cli.py export -i input.json -o output.xlsx
 ```
 
+## MCP 服务器 (v1.4.0 新增)
+
+项目提供 MCP 服务器，可集成到 Claude Code 等 AI 工具中使用。
+
+### 启动 MCP 服务器
+
+```bash
+# 安装依赖
+pip install fastmcp
+
+# 启动服务器（stdio 模式）
+python mcp_server.py
+```
+
+### MCP 工具列表
+
+| 工具名 | 功能 | 参数 |
+|--------|------|------|
+| `search_1688` | 关键词搜索采集 | keyword, limit |
+| `scrape_1688_url` | URL 单品采集 | url |
+| `transform_1688_to_ozon` | 转换为 Ozon 格式 | products_json |
+| `export_1688_to_excel` | 导出 Excel | products_json, filename |
+| `upload_ozon` | 上传到 Ozon | json_path |
+| `list_ozon_products` | 获取商品列表 | - |
+| `get采集状态` | 获取采集状态 | - |
+
+### 注册到 Claude Code
+
+在 `~/.claude/mcp.json` 中添加：
+
+```json
+{
+  "1688-scraper": {
+    "command": "python",
+    "args": ["C:/Users/52648/Documents/GitHub/1688-2/mcp_server.py"]
+  }
+}
+```
+
 ## 模块列表
 
 | 模块 | 路径 | 功能 |
@@ -151,7 +195,126 @@ python cli.py export -i input.json -o output.xlsx
 | `WebScraperAgent` | `src/agents/web_scraper_agent.py` | 网页抓取 |
 | `ExcelExporter` | `src/utils/excel_exporter.py` | Excel 导出 |
 | `OzonTransformer` | `src/utils/ozon_transformer.py` | Ozon 转换 |
+| `OzonApiManager` | `src/utils/ozon_api.py` | Ozon API 上传 |
 | `FileManager` | `src/utils/file_manager.py` | 文件管理 |
+
+### 最小子模块 (`src/modules/`)
+
+每个子模块都可单独导入使用：
+
+```python
+from src.modules import (
+    # 标题清洗
+    clean_title,
+    # 翻译
+    translate_to_ru, translate_to_en,
+    # 单位转换
+    convert_weight, convert_dimension,
+    # 价格计算
+    calculate_price,
+    # 字段映射
+    map_attributes, infer_category,
+    # 图片下载
+    download_images,
+    # 目录和文件
+    create_product_dir, save_details,
+    # 文件名清洗
+    sanitize,
+)
+
+# 清洗标题（去除营销词）
+title = clean_title("超耐咬爆款猫咪玩具一件代发包邮")
+
+# 翻译为俄文
+ru_name = translate_to_ru(title)
+
+# 翻译为英文
+en_name = translate_to_en(title)
+
+# 单位转换
+weight_g = convert_weight("500g")      # 500.0
+dimension_mm = convert_dimension("10cm") # 100.0
+
+# 计算 Ozon 售价
+price_rub = calculate_price(10.0, 500)  # 10元, 500g
+
+# 字段映射
+mapped, unmapped = map_attributes({"材质": "塑料", "颜色": "红色"})
+
+# 推断品类
+category = infer_category("猫咪静音球玩具")
+
+# 下载图片
+download_images(urls, "images/")
+
+# 创建目录
+product_dir, image_dir = create_product_dir("商品名称")
+
+# 保存详情
+save_details(product_dir, details)
+```
+
+| 子模块 | 功能 |
+|--------|------|
+| `FilenameSanitizer` | 文件名清洗 |
+| `TitleCleaner` | 标题清洗（去除营销词） |
+| `UnitConverter` | 单位转换（CM→MM, KG→G） |
+| `Translator` | 多引擎翻译（中→俄/英） |
+| `PriceCalculator` | Ozon 价格计算 |
+| `ImageDownloader` | 图片下载（多线程+重试） |
+| `FieldMapper` | 字段映射 |
+| `CategoryMapper` | 品类推断 |
+| `DirCreator` | 目录创建 |
+| `DetailSaver` | 详情保存（Markdown） |
+| `ExcelStyler` | Excel 样式 |
+
+## Ozon API 配置
+
+### 配置凭证
+
+在项目根目录创建或编辑 `.env` 文件：
+
+```bash
+# .env 文件
+OZON_CLIENT_ID=你的ClientID
+OZON_API_KEY=你的API密钥
+```
+
+**获取方式**：
+1. 登录 [Ozon Seller](https://seller.ozon.ru)
+2. 进入"设置" → "API密钥"
+3. 创建/复制 Client ID 和 API Key
+
+### 上传到 Ozon
+
+```bash
+# 方式一：直接上传（使用已采集的 ozon_export.json）
+python upload_to_ozon.py
+
+# 方式二：指定文件路径
+python upload_to_ozon.py 1688_products/ozon_export.json
+
+# 方式三：全自动采集+上传
+python auto_publish.py -q "猫玩具" -p 1000 -c 17027484
+```
+
+## 日志文件
+
+v1.3.1+ 版本自动记录 API 调用日志：
+
+```bash
+# 查看日志
+type logs\ozon_api.log
+
+# 或实时查看
+tail -f logs/ozon_api.log
+```
+
+**日志内容**：
+- API 请求/响应
+- 上传结果
+- 错误信息
+- 重试记录
 
 ## 注意事项 (Notes)
 
@@ -159,3 +322,4 @@ python cli.py export -i input.json -o output.xlsx
 2. **商品名翻译**：`name` 字段为清洗后的中文标题，Ozon 真正要求俄文/英文，建议接入翻译 API。
 3. **反爬维护**：1688 DOM 可能随时变化，`query_selector` 需定期检查更新。
 4. **频率限制**：单次建议采集不超过 10 件，避免高频访问被封号。
+5. **API 重试**：v1.3.1+ 版本内置 3 次重试（指数退避），网络不稳定时会自动重试。
