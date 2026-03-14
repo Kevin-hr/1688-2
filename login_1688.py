@@ -92,7 +92,8 @@ async def login():
 
         print("[Login] 正在关闭浏览器并保存会话状态...")
         await context.close()  # 关闭时 Playwright 自动将 Session 写入 user_data_dir
-        print(f"[Login] ✅ 登录状态已保存至: {os.path.abspath(user_data_dir)}")
+        # 避免 emoji 编码问题
+        print(f"[Login] [OK] 登录状态已保存至: {os.path.abspath(user_data_dir)}")
         print("[Login] 现在可以运行 main.py 开始采集。")
 
 

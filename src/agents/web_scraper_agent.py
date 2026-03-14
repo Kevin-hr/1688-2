@@ -17,11 +17,25 @@ v1.3.0 改进重点：
 
 import asyncio  # 异步 IO 库，用于 await/async 协程
 import os  # 操作系统接口，用于目录检查和创建
+import sys  # 系统接口
+import io  # IO 包装
 import urllib.parse  # URL 编码库
 import random  # 随机库，用于反检测
 from playwright.async_api import async_playwright  # Playwright 异步 API
 from src.utils.file_manager import FileManager  # 本地文件/图片管理器
 from src.modules.anti_detect import AntiDetectConfig, get_anti_detect_config  # 反检测配置
+
+# 修复 Windows 控制台 UTF-8 编码问题
+if sys.platform == "win32":
+    try:
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
+        sys.stderr = io.TextIOWrapper(
+            sys.stderr.buffer, encoding="utf-8", errors="replace"
+        )
+    except Exception:
+        pass
 
 
 class WebScraperAgent:
@@ -91,22 +105,28 @@ class WebScraperAgent:
     ]
 
     # ------------------------------------------------------------------ #
-    # 详情页 — 属性行选择器（组合查询）
+    # 详情页 — 属性行选择器（组合查询，针对 2026 版增强）
     # ------------------------------------------------------------------ #
     ATTRIBUTE_ROW_SELECTOR = (
         ".prop-item, .attribute-item, .obj-content, "
         ".offer-attr-item, .detail-attribute-item, "
-        ".attrs-item, .de-attr-item"
+        ".attrs-item, .de-attr-item, "
+        "div[class*='attribute-item'], li[class*='prop-item'], "
+        ".pc-detail-property-item, .od-pc-attribute-item" # 2026 最新类名
     )
     ATTRIBUTE_NAME_SELECTOR = (
-        ".prop-name, .attribute-name, .obj-title, .attr-name, .attrs-name"
+        ".prop-name, .attribute-name, .obj-title, .attr-name, .attrs-name, "
+        "span[class*='name'], div[class*='title'], "
+        ".pc-detail-property-label"
     )
     ATTRIBUTE_VALUE_SELECTOR = (
-        ".prop-value, .attribute-value, .obj-desc, .attr-value, .attrs-value"
+        ".prop-value, .attribute-value, .obj-desc, .attr-value, .attrs-value, "
+        "span[class*='value'], div[class*='desc'], "
+        ".pc-detail-property-value"
     )
 
     # ------------------------------------------------------------------ #
-    # 详情页 — 图片选择器
+    # 详情页 — 图片选择器（针对 2026 版轮播图增强）
     # ------------------------------------------------------------------ #
     IMAGE_SELECTOR = (
         ".tab-trigger img, "  # PC 端轮播选项卡图片
@@ -114,7 +134,10 @@ class WebScraperAgent:
         ".swipe-image img, "  # 移动端滑动图片
         ".slider-img img, "  # 滑块组件图片
         ".main-image img, "  # 2026 版主图容器
-        ".gallery-image img"  # 通用画廊图
+        ".gallery-image img, "
+        "div[class*='image-view'] img, "
+        "ul[class*='nav-tabs'] img, "
+        ".mod-detail-gallery img" # 容器级回退
     )
 
     # ------------------------------------------------------------------ #
@@ -161,19 +184,26 @@ class WebScraperAgent:
             print("[Scraper] 浏览器已在运行，跳过重复启动。")
             return
 
-        print("[Scraper] 正在启动 Playwright 浏览器（单一 Session 模式）...")
-
-        # 获取反检测配置
-        anti_config = get_anti_detect_config() if use_anti_detect else AntiDetectConfig()
-        context_options = anti_config.get_context_options()
-        launch_args = anti_config.get_launch_args()
+        print("[Scraper] 正在启动 Playwright 浏览器...")
 
         self._playwright = await async_playwright().start()
 
-        # 使用反检测配置创建浏览器上下文
+        # 根据是否启用反检测选择配置
+        if use_anti_detect:
+            anti_config = get_anti_detect_config()
+            context_options = anti_config.get_context_options()
+            launch_args = anti_config.get_launch_args()
+            print("[Scraper] 使用反检测配置")
+        else:
+            # 最基本的浏览器配置
+            context_options = {}
+            launch_args = ["--disable-blink-features=AutomationControlled"]
+            print("[Scraper] 使用基础配置（无反检测）")
+
+        # 使用配置创建浏览器上下文
         self._context = await self._playwright.chromium.launch_persistent_context(
             user_data_dir=self.user_data_dir,
-            headless=True,  # 无头模式，降低资源消耗
+            headless=True,  # 无头模式
             user_agent=context_options.get("user_agent"),
             viewport=context_options.get("viewport"),
             locale=context_options.get("locale"),
@@ -183,9 +213,9 @@ class WebScraperAgent:
 
         self._page = await self._context.new_page()
 
-        # 注入反检测脚本
-        if use_anti_detect:
-            await self._page.add_init_script(anti_config.add_human_behavior(page=None)["script"])
+        # 注入反检测脚本（暂时禁用以测试浏览器稳定性）
+        # if use_anti_detect:
+        #     await self._page.add_init_script(anti_config.add_human_behavior(page=None)["script"])
 
         print("[Scraper] ✅ 浏览器已启动（反检测已启用）。")
 
@@ -202,9 +232,9 @@ class WebScraperAgent:
             self._playwright = None
             print("[Scraper] 浏览器已关闭。")
 
-    async def __aenter__(self):
+    async def __aenter__(self, use_anti_detect: bool = False):
         """支持 async with 语法自动启动浏览器。"""
-        await self.start()
+        await self.start(use_anti_detect=use_anti_detect)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -397,14 +427,15 @@ class WebScraperAgent:
                 await asyncio.sleep(random.uniform(1.5, 3.0))
 
                 # 1688 搜索接口要求关键词使用 GBK 编码（历史遗留编码格式）
+                # 1688 搜索接口使用 UTF-8 编码（2026年更新）
                 try:
-                    encoded_kw = urllib.parse.quote(keyword, encoding="gbk")
+                    encoded_kw = urllib.parse.quote(keyword, encoding="utf-8")
                 except Exception:
-                    encoded_kw = urllib.parse.quote(keyword)  # 回退：UTF-8
+                    encoded_kw = urllib.parse.quote(keyword)  # 回退：默认 UTF-8
 
                 # 构造搜索 URL
                 search_url = (
-                    f"https://s.1688.com/selloffer/offer_search.htm?keywords={encoded_kw}"
+                    f"https://s.1688.com/youyuan/index.htm?tab=search&keywords={encoded_kw}"
                 )
 
                 # 拼接排序参数

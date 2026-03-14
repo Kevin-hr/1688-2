@@ -1,1 +1,9 @@
 [2026-03-14 23:05:17] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 1234****
+[2026-03-15 00:30:15] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 00:30:15] [OzonApi] INFO - 开始上传商品，文件路径: C:\Users\52648\Documents\GitHub\1688-2\1688_products\ozon_export.json
+[2026-03-15 00:30:15] [OzonApi] INFO - 成功读取 JSON 文件，包含 2 个商品
+[2026-03-15 00:30:15] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 2
+[2026-03-15 00:30:23] [OzonApi] ERROR - API 请求失败，状态码: 400, 响应: {
+  "code": 3,
+  "message": "Request validation error: invalid Request.Items.TypeId: value must be greater than 0"
+}

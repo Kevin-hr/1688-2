@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Search kicks</title>
+
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="Search kicks">
+		<meta name="keywords" content="tiktok search, tiktok lookup, tiktok finder, tiktok search viewer">
+
+		<link rel="manifest" href="https://urlebird.com/manifest.json">
+
+		<link rel="canonical" href="https://urlebird.com/search/">
+		<meta name="robots" content="max-image-preview:large">
+
+		<link rel="preconnect" href="//code.jquery.com">
+		<link rel="preconnect" href="//cdnjs.cloudflare.com">
+		<link rel="preconnect" href="//stackpath.bootstrapcdn.com">
+		<link rel="preconnect" href="//kit.fontawesome.com">
+		<link rel="preconnect" href="//googletagmanager.com">
+
+		<link rel="dns-prefetch" href="//code.jquery.com">
+		<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+		<link rel="dns-prefetch" href="//stackpath.bootstrapcdn.com">
+		<link rel="dns-prefetch" href="//kit.fontawesome.com">
+		<link rel="dns-prefetch" href="//googletagmanager.com">
+
+		<link rel="alternate" href="https://urlebird.com/search/?q=kicks" hreflang="x-default">
+		<link rel="alternate" href="https://urlebird.com/search/?q=kicks" hreflang="en">
+		<link rel="alternate" href="https://urlebird.com/ru/search/?q=kicks" hreflang="ru">
+		<link rel="alternate" href="https://urlebird.com/ua/search/?q=kicks" hreflang="uk">
+		<link rel="alternate" href="https://urlebird.com/es/search/?q=kicks" hreflang="es">
+		<link rel="alternate" href="https://urlebird.com/it/search/?q=kicks" hreflang="it">
+		<link rel="alternate" href="https://urlebird.com/de/search/?q=kicks" hreflang="de">
+		<link rel="alternate" href="https://urlebird.com/fr/search/?q=kicks" hreflang="fr">
+		<link rel="alternate" href="https://urlebird.com/pt/search/?q=kicks" hreflang="pt">
+		<link rel="alternate" href="https://urlebird.com/jp/search/?q=kicks" hreflang="ja-JP">
+		<link rel="alternate" href="https://urlebird.com/tw/search/?q=kicks" hreflang="zh-TW">
+		<link rel="alternate" href="https://urlebird.com/id/search/?q=kicks" hreflang="id">
+
+		<link rel="icon" type="image/webp" href="https://urlebird.com/tml/images/icons/48x48.webp" sizes="48x48">
+		<link rel="icon" type="image/webp" href="https://urlebird.com/tml/images/icons/64x64.webp" sizes="64x64">
+		<link rel="icon" type="image/webp" href="https://urlebird.com/tml/images/icons/72x72.webp" sizes="72x72">
+		<link rel="icon" type="image/webp" href="https://urlebird.com/tml/images/icons/152x152.webp" sizes="152x152">
+		<link rel="icon" type="image/webp" href="https://urlebird.com/tml/images/icons/180x180.webp" sizes="180x180">
+		<link rel="icon" type="image/webp" href="https://urlebird.com/tml/images/icons/256x256.webp" sizes="256x256">
+		<link rel="apple-touch-icon" type="image/webp" href="https://urlebird.com/tml/images/icons/180x180.webp" sizes="180x180">
+
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://urlebird.com/tml/css/styles.css?v=2.1">
+
+		<!-- Quantcast Choice. Consent Manager Tag v2.0 (for TCF 2.0) -->
+ 		<script src="https://urlebird.com/tml/js/cm.js?v=6"></script>
+		<!-- End Quantcast Choice. Consent Manager Tag v2.0 (for TCF 2.0) -->
+		
+
+
+	</head>
+	<body>
+				<!-- header hidden collapse for mobile -->
+
+		<div class="collapse" id="navbarToggleExternalContent">
+			<div class="bg-black p-3">
+				<div class="navbar-collapse" id="navbarNavDropdown">
+					<ul class="navbar-nav">
+						<li class="nav-item active"><a class="link" href="https://urlebird.com/">Home</a></li>
+						<li class="nav-item"><a class="link" href="https://urlebird.com/trending/">Trending</a></li>
+						<li class="nav-item"><a class="link" href="https://urlebird.com/videos/popular/">Videos</a></li>
+						<li class="nav-item"><a class="link" href="https://urlebird.com/users/popular/">Users</a></li>
+						<li class="nav-item"><a class="link" href="https://urlebird.com/hashtags/popular/">Hashtags</a></li>
+						<li class="nav-item"><a class="link" href="https://urlebird.com/music/popular/">Music</a></li>			
+						<li class="nav-item"><a class="link" href="https://urlebird.com/anonymous/">Anonymous</a></li>				
+						<li class="nav-item"><a class="link" href="https://urlebird.com/snap/">Downloader</a></li>
+						<li class="nav-item">
+							<form id="search" class="my-2" action="https://urlebird.com/search/" method="GET">
+								<div class="h-100">
+									<div class="d-flex h-100">
+										<div class="searchbar">
+											<input class="search" type="text" name="q" placeholder=" Search @user or #hash">
+											<a href="#" class="search-icon" id="a_search"><i class="fa fa-search"></i></a>
+										</div>
+									</div>
+								</div>
+							</form>
+						</li>
+						<li class="nav-item">
+							<div class="dropdown my-2">
+								<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+									Language <i class="fas fa-globe-americas"></i>
+								</button>
+									<div class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+										<a class="dropdown-item" href="https://urlebird.com/search/?q=kicks">🇺🇸 English</a>
+										<a class="dropdown-item" href="https://urlebird.com/es/search/?q=kicks">🇪🇸 Español</a>
+										<a class="dropdown-item" href="https://urlebird.com/it/search/?q=kicks">🇮🇹 Italiano</a>
+										<a class="dropdown-item" href="https://urlebird.com/de/search/?q=kicks">🇩🇪 Deutsch</a>
+										<a class="dropdown-item" href="https://urlebird.com/fr/search/?q=kicks">🇫🇷 Français</a>
+										<a class="dropdown-item" href="https://urlebird.com/pt/search/?q=kicks">🇵🇹 Português</a>
+										<a class="dropdown-item" href="https://urlebird.com/jp/search/?q=kicks">🇯🇵 日本語</a>
+										<a class="dropdown-item" href="https://urlebird.com/tw/search/?q=kicks">🇹🇼 中文</a>
+										<a class="dropdown-item" href="https://urlebird.com/id/search/?q=kicks">🇮🇩 Bahasa</a>
+										<a class="dropdown-item" href="https://urlebird.com/ru/search/?q=kicks">ru Русский</a>
+										<a class="dropdown-item" href="https://urlebird.com/ua/search/?q=kicks">🇺🇦 Українська</a>										
+									</div>
+							</div>
+						</li>		 
+					</ul>
+				</div>	
+			</div>
+		</div>
+		<!-- /end/ header collapse for mobile -->
+		
+		<nav class="navbar navbar-expand-lg navbar-dark bg-black">
+			<div class="container-fluid">
+				<a href="https://urlebird.com/" class="navbar-left"><img src="https://urlebird.com/tml/images/logo.png" class="logo" alt="Urlebird TikTok Viewer"></a>
+				<div class="mr-auto d-lg-none">
+					<div class="dropdown my-2">
+						<button class="btn btn-secondary dropdown-toggle lang-btn" type="button" id="dropdownMenuButton2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<span class="size-23px">🇺🇸 <span class="w-35px"><i class="fas fa-language"></i></span></span>
+						</button>
+						<div class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+							<a class="dropdown-item" href="https://urlebird.com/search/?q=kicks">🇺🇸 English</a>
+							<a class="dropdown-item" href="https://urlebird.com/es/search/?q=kicks">🇪🇸 Español</a>
+							<a class="dropdown-item" href="https://urlebird.com/it/search/?q=kicks">🇮🇹 Italiano</a>
+							<a class="dropdown-item" href="https://urlebird.com/de/search/?q=kicks">🇩🇪 Deutsch</a>
+							<a class="dropdown-item" href="https://urlebird.com/fr/search/?q=kicks">🇫🇷 Français</a>
+							<a class="dropdown-item" href="https://urlebird.com/pt/search/?q=kicks">🇵🇹 Português</a>
+							<a class="dropdown-item" href="https://urlebird.com/jp/search/?q=kicks">🇯🇵 日本語</a>
+							<a class="dropdown-item" href="https://urlebird.com/tw/search/?q=kicks">🇹🇼 中文</a>
+							<a class="dropdown-item" href="https://urlebird.com/id/search/?q=kicks">🇮🇩 Bahasa</a>							
+							<a class="dropdown-item" href="https://urlebird.com/ru/search/?q=kicks">ru Русский</a>
+							<a class="dropdown-item" href="https://urlebird.com/ua/search/?q=kicks">🇺🇦 Українська</a>
+						</div>
+					</div>
+				</div>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse">
+						<!-- for desktop change language in header -->
+							<div>
+								<div class="dropdown">
+									<button class="btn btn-secondary dropdown-toggle lang-btn" type="button" id="dropdownMenuButton3" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+										<span>🇺🇸 <span class="w-35px"><i class="fas fa-language"></i></span></span>
+									</button>
+									<div class="dropdown-menu" aria-labelledby="dropdownMenuButton3">
+										<a class="dropdown-item" href="https://urlebird.com/search/?q=kicks">🇺🇸 English</a>
+										<a class="dropdown-item" href="https://urlebird.com/es/search/?q=kicks">🇪🇸 Español</a>
+										<a class="dropdown-item" href="https://urlebird.com/it/search/?q=kicks">🇮🇹 Italiano</a>
+										<a class="dropdown-item" href="https://urlebird.com/de/search/?q=kicks">🇩🇪 Deutsch</a>
+										<a class="dropdown-item" href="https://urlebird.com/fr/search/?q=kicks">🇫🇷 Français</a>
+										<a class="dropdown-item" href="https://urlebird.com/pt/search/?q=kicks">🇵🇹 Português</a>
+										<a class="dropdown-item" href="https://urlebird.com/jp/search/?q=kicks">🇯🇵 日本語</a>
+										<a class="dropdown-item" href="https://urlebird.com/tw/search/?q=kicks">🇹🇼 中文</a>
+										<a class="dropdown-item" href="https://urlebird.com/id/search/?q=kicks">🇮🇩 Bahasa</a>												
+										<a class="dropdown-item" href="https://urlebird.com/ru/search/?q=kicks">ru Русский</a>
+										<a class="dropdown-item" href="https://urlebird.com/ua/search/?q=kicks">🇺🇦 Українська</a>
+									</div>
+								</div>
+							</div>
+						<!-- /end/ for desktop change language in header -->
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item text-nowrap"><a class="link" href="https://urlebird.com/trending/">Trending</a></li>
+						<li class="nav-item text-nowrap"><a class="link" href="https://urlebird.com/videos/popular/">Videos</a></li>
+						<li class="nav-item text-nowrap"><a class="link" href="https://urlebird.com/users/popular/">Users</a></li>
+						<li class="nav-item text-nowrap"><a class="link" href="https://urlebird.com/hashtags/popular/">Hashtags</a></li>
+						<li class="nav-item text-nowrap"><a class="link" href="https://urlebird.com/music/popular/">Music</a></li>		
+						<li class="nav-item text-nowrap"><a class="link" href="https://urlebird.com/snap/">Downloader</a></li>										
+					</ul>
+					<ul class="navbar-nav search">	
+						<li class="nav-item active">
+							<form id="search2" action="https://urlebird.com/search/" method="GET">
+							<div class="container">
+								<div class="d-flex">
+									<div class="searchbar">
+										<input class="search" type="text" name="q" placeholder="Search @user or #hash">
+										<a href="#" class="search-icon" id="a_search2"><i class="fa fa-search"></i></a>
+									</div>
+								</div>
+							</div>
+							</form>
+						</li>
+					</ul>					
+				</div>
+			</div>
+		</nav>
+		<div class="main">
+			<div class="container-fluid text-center pt-3">
+				<div class="row">
+					<div class="col-md-12 text-center">
+						<div class="d-flex mb-2 justify-content-center">
+							<div class="p-1 ml-3">
+								<h1 class="font-weight-normal">Search Results for <b>kicks</b></h1>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="container-fluid text-center my-3 pt-4">
+					<div class="row">
+						<div class="col-md-6 mt-md-0 mt-3 copyright text-center">
+							<h3 class="font-weight-bold">#️⃣ Hashtags</h3>
+							<div class="tags">
+								<a href="https://urlebird.com/hash/kicks/"><span class="size7">kicks</span></a>
+							</div>
+						</div>
+						<hr class="clearfix w-100 d-md-none pb-1">
+						<div class="col-md-6 mb-md-0 mb-3 text-center">
+							<h3 class="font-weight-bold">🦄Users</h3>
+							<div class="row ml-2">
+								<div class="user my-2 col-md-6 col-sm-5">
+									<div class="img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://p16-common.tiktokcdn-us.com/tos-useast2a-avt-0068-euttp/8577dfe242243fc97df3918653473ea2~tplv-tiktokx-cropcenter:720:720.webp" alt="KICKS" class="lazyload"></div>
+									<div class="info text-truncate">
+										<a href="https://urlebird.com/user/kicks.sverige/" class="uri">@kicks.sverige</a>
+										<span>KICKS</span>
+										<span class="followers">94.72K followers</span>
+									</div>
+								</div>
+							</div>
+						</div>					
+					</div>
+				</div>				
+				<div class="row">
+					<!--
+					<div class="col-md-12 text-center mb-3">
+						<div class="tags">
+								<a href="https://urlebird.com/hash/kicks/"><span class="size7">kicks</span></a>
+							</div>
+					</div>
+					-->
+					<div class="col-md-12 text-center">
+						<h2>Videos</h2>
+					</div>
+					<div id="thumbs" class="col-md-12 text-center text-md-left p-0 pl-md-5 pl-0">
+						<div class="thumb wb">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/ed.finy716/"><img src="https://p19-common.tiktokcdn-us.com/tos-useast5-avt-0068-tx/2b0c8f1167f9401f55e209ce4e2b092b~tplv-tiktokx-cropcenter:100:100.jpeg" alt="ed.finy716"></a>
+							</div>
+							<div class="img"><img src="https://i.axod.net/pcaa6P2CxMcCbVBQBljMS9oj9o6rx5994egAQaV16nMAwCqvgrmPoOJow2vEJ0TvuG_-Vbuxe_tcqzeJc46kkRnQWm-8gJVd7JD-5GQXpjdPv2Fv7H1kwuq8FiD4b0-EoKwfCyKSHTC26xMrGoQg9IcOKZNmadRhAxsgdcbEESmkgQ.jpeg" class="img-fluid" alt="@ED Finy716"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 5 days ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 2.85M</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 90.22K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 422</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/ed.finy716/">@ed.finy716</a></div>	
+								<a href="https://urlebird.com/video/7615279497507573006/"><span>#fyp #tiktok #movietok #kicks #movie </span></a>
+							</div>
+							<a href="https://urlebird.com/video/7615279497507573006/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="d-block d-md-none text-center mt-1 mb-1"><iframe data-aa="2376701" src="//ad.a-ads.com/2376701?size=320x100" style="width:320px; height:100px; border:0px; padding:0; overflow:hidden; background-color: transparent;"></iframe></div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/mothershipsg/"><img src="https://p16-common.tiktokcdn-us.com/tos-alisg-avt-0068/5cbe972154c6d3b99a3031461e42ea2e~tplv-tiktokx-cropcenter:100:100.jpeg" alt="mothershipsg"></a>
+							</div>
+							<div class="img"><img src="https://i.axod.net/pcbg6P2CxIcDbfCqLigua91kngf_PdBJN9VACe6AX_xgiwZu3c-ejsGRqk2hw1Mit973usrAM-D4PyCJagpjOqK1ZkkggcX9PigRs8aLmwF9ok0OvVFyLaoY4GONP4QUNhhUCxXF8NmebiqqHobpqug5tPJA63-lo0R4.jpeg" class="img-fluid" alt="@Mothership"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 5 hours ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 158.08K</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 1.75K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 55</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/mothershipsg/">@mothershipsg</a></div>	
+								<a href="https://urlebird.com/video/some-chinese-viewers-also-criticised-the-move-as-lacking-martial-7617068703854628104/"><span>Some Chinese viewers also criticised the move as lacking &am...</span></a>
+							</div>
+							<a href="https://urlebird.com/video/some-chinese-viewers-also-criticised-the-move-as-lacking-martial-7617068703854628104/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/ag.combat/"><img src="https://p16-common.tiktokcdn-us.com/tos-maliva-avt-0068/ef813f2aeaab57161cdf213e897d044b~tplv-tiktokx-cropcenter:100:100.jpeg" alt="ag.combat"></a>
+							</div>
+							<div class="img"><img src="https://i.axod.net/pcaA7P2CwAcyZXALD_tYtrnCgV6192RJY5fn1dWyK3Y3pBW8VE-pDqhLqYz7hhHd12GJXG8i0wFwr1EJXXdOLSNu31zfaE4S0k38z4symIPylw1tWjbPFgtjpCA3zj0BF7yBdAfVjokjYsAXoc5g7zoR8gd946XXJeqpveCFBg.jpeg" class="img-fluid" alt="@тигра 🐯"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 1 month ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 2.99M</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 175.03K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 2.12K</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/ag.combat/">@ag.combat</a></div>	
+								<a href="https://urlebird.com/video/after-training-7601651538209131798/"><span>after training ;) #taekwondo #kicks #dance #viral #fyp </span></a>
+							</div>
+							<a href="https://urlebird.com/video/after-training-7601651538209131798/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/reymond06132/"><img src="https://p16-common.tiktokcdn-us.com/tos-alisg-avt-0068/918ff0c366177801971f68e9169463c2~tplv-tiktokx-cropcenter:100:100.jpeg" alt="reymond06132"></a>
+							</div>
+							<div class="img"><img src="https://i.axod.net/pcaM7P2CwIczZXDCcXsoyeeg211lcKaykux3u37SXKOhW0rvm3aKuekZWpxmrMyFl2Lhz5jytoNEiUff9HYnMNKG4nTQwHFn04nTT_goj9-NMk1ho0v2DZd9HXRgHZVHBCeXhOmSzFehD4P0Qv9d78wvx9e-Wu55yLfNiEZ_.jpeg" class="img-fluid" alt="@暗&bull;|Reymond"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 2 months ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 1.56M</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 62.66K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 201</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/reymond06132/">@reymond06132</a></div>	
+								<a href="https://urlebird.com/video/ranking-taekwondo-most-effective-kicks-7590611980872977685/"><span>Ranking Taekwondo Most Effective Kicks 💀 #foryou #taekwondo ...</span></a>
+							</div>
+							<a href="https://urlebird.com/video/ranking-taekwondo-most-effective-kicks-7590611980872977685/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="d-block d-md-none text-center mt-1 mb-1"><iframe data-aa="2376701" src="//ad.a-ads.com/2376701?size=320x100" style="width:320px; height:100px; border:0px; padding:0; overflow:hidden; background-color: transparent;"></iframe></div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/nat_hearn/"><img src="https://p19-common.tiktokcdn-us.com/tos-maliva-avt-0068/7323203125237448710~tplv-tiktokx-cropcenter:100:100.jpeg" alt="nat_hearn"></a>
+							</div>
+							<div class="img"><img src="https://i.axod.net/pcYQ7b2SzAcyHb5BAw94VTOjVL8xnwZu36fJX4wPf38tqxUf3G67MyjehRfYYNGbDKOIjCxnl3ydohzCdhE7BTLG6Lto3tU_8M4ZUuIhOhmxRtxI6TWiDBAnT84oUs1ELvkzepzMjqygK5tC0yl-baeWqxHBxWx8xwUjdQWUBg.jpeg" class="img-fluid" alt="@Nat Hearn"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 10 months ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 25.84M</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 1.99M</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 4.24K</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/nat_hearn/">@nat_hearn</a></div>	
+								<a href="https://urlebird.com/video/which-kicks-are-most-effective-7496852864770280726/"><span>Which kicks are most effective?</span></a>
+							</div>
+							<a href="https://urlebird.com/video/which-kicks-are-most-effective-7496852864770280726/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/conferenceleague/"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://p19-common.tiktokcdn-us.com/tos-useast2a-avt-0068-euttp/668c53907efb00c6c52f9d85ca8f0036~tplv-tiktokx-cropcenter:100:100.jpeg" class="lazyload" alt="conferenceleague"></a>
+							</div>
+							<div class="img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://i.axod.net/pYaA7P2CwMdsqoSlxozCVHBn1132irpX3QfnbXPuze2UXSmBJY2RNKiLoU7kAt3mCJOMgHvx4Idhu7qPRm1VJzN-5eTxVzdKm4EzQrSHc4m3k32GcWxLqdvjgqxBGIZcCfoNYMedjwnjtpxwjv9Z0_nn8oNetgt3d-WRIw.jpeg" class="img-fluid lazyload" alt="@conferenceleague"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 21 hours ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 1.03M</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 20.27K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 88</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/conferenceleague/">@conferenceleague</a></div>	
+								<a href="https://urlebird.com/video/isaques-overhead-kick-on-repeat-7616828577857785110/"><span>Isaque&amp;rsquo;s overhead kick on repeat 🥵🥵🥵 #UECL #Shakht...</span></a>
+							</div>
+							<a href="https://urlebird.com/video/isaques-overhead-kick-on-repeat-7616828577857785110/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/carmovie5/"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://p16-common.tiktokcdn-us.com/tos-maliva-avt-0068/54a6879362bb901dd578cbc7faf7b564~tplv-tiktokx-cropcenter:100:100.jpeg" class="lazyload" alt="carmovie5"></a>
+							</div>
+							<div class="img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://i.axod.net/pcbg6P2CxAcyZfCqFpNfJWgjEltQwdlsjFGMG2DGYUS8Ogys6zBSGeILqtCWpE6zjpYlqAWEH6udGElabCh3_2FCE_9YOWWoxDc52NoytFlDkrjBHzetx-OgxlrTCVATJR91s_aWRicwM_1Pk1xSofJnVDoGA_h-yOP7wcM.jpeg" class="img-fluid lazyload" alt="@Carmovie"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 1 day ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 14.63K</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 86</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 1</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/carmovie5/">@carmovie5</a></div>	
+								<a href="https://urlebird.com/video/starke-legkicks-bringen-arroganten-gegner-zu-boden-7616733877943553302/"><span>Starke Legkicks bringen arroganten Gegner zu Boden#wrestling...</span></a>
+							</div>
+							<a href="https://urlebird.com/video/starke-legkicks-bringen-arroganten-gegner-zu-boden-7616733877943553302/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="d-block d-md-none text-center mt-1 mb-1"><div id="frame" style="width: 300px; margin: 0 auto; "><iframe data-aa="2374085" src="//ad.a-ads.com/2374085?size=300x250" style="width:300px; height:250px; border:0px; padding:0; overflow:hidden; background-color: transparent;"></iframe><a style="display: block; text-align: right; font-size: 12px" id="frame-link" href="https://aads.com/campaigns/new/?source_id=2374085&source_type=ad_unit&partner=2374085">Advertise here</a></div></div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/juliaa.vtx/"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://p16-common.tiktokcdn-us.com/tos-useast2a-avt-0068-euttp/67855ddd5b992175f75f85aa530c9b05~tplv-tiktokx-cropcenter:100:100.jpeg" class="lazyload" alt="juliaa.vtx"></a>
+							</div>
+							<div class="img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://i.axod.net/pcYM7f2CwAcyHT4Me6t9r9Fzm2jy8rdPgqZddAsu5_yg779umH6wyGlAkYL7hpec2NnS3gcWMd7VKpT7OwCRYkDGOqJ9YbPw7Gg3L8rqHwJtJdk7NXBGbhMQh6MlPmkRGH9CtvpmkCkj6gEoVohqOKrcfKrKZRv0p_nObnVDrHrqflE.jpeg" class="img-fluid lazyload" alt="@🤍"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 2 days ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 62.05K</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 4.29K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 32</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/juliaa.vtx/">@juliaa.vtx</a></div>	
+								<a href="https://urlebird.com/video/frontkick-7616370047539252512/"><span>Frontkick!!💪 #kickboksgirl #kickboxing #femalefighter #fight...</span></a>
+							</div>
+							<a href="https://urlebird.com/video/frontkick-7616370047539252512/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/aureliaagel/"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://p16-common.tiktokcdn-us.com/tos-useast2a-avt-0068-euttp/86097a039e84129cca6b271702a89b99~tplv-tiktokx-cropcenter:100:100.jpeg" class="lazyload" alt="aureliaagel"></a>
+							</div>
+							<div class="img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://i.axod.net/pcYQ7LySxMcCUQdK6occ2tGkvo-HD6SWMoVAOr5elHI7mi1hcPMZk9KWqS6ct7Blxu8rp_NfxGXcW1UDFmpT57JIqxhG7glxSnNJeEuYCl0H0k4DVqBEmthhGnk-KkR3gZ9Yx7eMTyQ53gdnpauTMyoo8AICbQDbAFps.jpeg" class="img-fluid lazyload" alt="@Aur&eacute;lia Agel"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 2 years ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 19.93M</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 308.12K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 5.2K</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/aureliaagel/">@aureliaagel</a></div>	
+								<a href="https://urlebird.com/video/7278691253322124576/"><span>#kicks #boxing #pourtoi #fyp </span></a>
+							</div>
+							<a href="https://urlebird.com/video/7278691253322124576/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="thumb wc">
+							<div class="author text-right">
+								<a href="https://urlebird.com/user/iamdikeh/"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://p16-common.tiktokcdn-us.com/tos-maliva-avt-0068/8c98a91989e7f34584dce39285403e2b~tplv-tiktokx-cropcenter:100:100.jpeg" class="lazyload" alt="iamdikeh"></a>
+							</div>
+							<div class="img"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://i.axod.net/pcbq7L2CwIcDbfAROp9NzBIyA1rjUQeupQYMxZ6Jc0a0-rh_1Cz2fmv8ZwFsuG15GBNFmhCdXve-_AbCe0oyLTN-bYg-AaurvK1v1-lwJ9Ii3HWpR7P3DTMetDw06tQCw42jRL869fCa51vxQaHOkuYc9-V87XPVhusSJQ.jpeg" class="img-fluid lazyload" alt="@Dikeh"></div>
+							<div class="stats">
+								<div class="flex items-center mb-1"><span><i class="fas fa-clock" aria-hidden="true"></i> 23 hours ago</span></div>								
+								<div class="flex items-center mb-1"><span><i class="fas fa-play" aria-hidden="true"></i> 430.58K</span></div>									
+								<div class="flex items-center mb-1"><span><i class="fas fa-heart" aria-hidden="true"></i> 59.83K</span></div>
+								<div class="flex items-center mb-1"><span><i class="fas fa-comment" aria-hidden="true"></i> 346</span></div>																						
+							</div>			
+							<div class="info3">
+								<div class="author-name"><a href="https://urlebird.com/user/iamdikeh/">@iamdikeh</a></div>	
+								<a href="https://urlebird.com/video/commentary-king-7616792493664767253/"><span>😂😂😂😂😂😂 commentary: @Voice King </span></a>
+							</div>
+							<a href="https://urlebird.com/video/commentary-king-7616792493664767253/"><div class="overlay-s"></div></a>
+							<div class="overlay-shadow"></div>
+						</div><div class="d-block d-md-none text-center mt-1 mb-1"><iframe data-aa="2376701" src="//ad.a-ads.com/2376701?size=320x100" style="width:320px; height:100px; border:0px; padding:0; overflow:hidden; background-color: transparent;"></iframe></div>
+					</div>			
+				</div>
+				<div class="row">
+					<div class="col-md-12 mt-3 justify-content-center text-center">
+						<button class="flat mb-4" id="search_load_more" data-q="af02785cbbcf9992NCTAS29k4xrMxWi9BX-tm3-ObJbWyvC3uJeljwRj01g" data-c="93df4dd2a4f61917jdsgtEm8Ui1-3qv9spKvtQ" data-lang="" data-no-more="No more video" data-x="8ea816f510202dc1m9wOWsW-wvpxMW8ohYFvYkpjKpKdTes4UH3lfSA3pEI" T>Load More</button>
+					</div>
+				</div>				
+			</div>
+		</div>
+		<footer class="page-footer font-small blue py-2">
+	<div class="container-fluid text-center text-md-left">
+		<div class="row">
+			<div class="col-md-7 mt-md-0 mt-3 d-none d-md-block copyright">
+				Made with ❤️ <a href="https://urlebird.com/" title="The is most comfortable tiktok online viewer">UrleBird.com</a> 
+				<span class="sp">|</span> <a href="https://urlebird.com/page/privacy-policy/">Privacy Policy</a> 
+				<span class="sp">|</span> <a href="https://urlebird.com/page/terms-of-use/">Terms of Use</a> 
+				<span class="sp">|</span> <a href="https://urlebird.com/contact-us/">Contact Us</a> 
+				<span class="sp">|</span> <a href="https://urlebird.com/removal-request/">Removal</a>
+				<span class="sp">|</span> <a href="https://urlebird.com/page/about-us/">About Us</a>
+			</div>
+			<div class="col-md-7 mt-md-0 mt-3 d-md-none copyright">
+				Made with ❤️ <a href="https://urlebird.com/" title="The is most comfortable tiktok online viewer">UrleBird.com</a>
+				<div class="mb-1"></div>
+				<a href="https://urlebird.com/page/privacy-policy/">Privacy Policy</a><br>
+				<a href="https://urlebird.com/page/terms-of-use/">Terms of Use</a><br>
+				<a href="https://urlebird.com/contact-us/">Contact Us</a><br>
+				<a href="https://urlebird.com/removal-request/">Removal</a><br>
+				<a href="https://urlebird.com/page/about-us/">About Us</a>
+			</div>
+			<hr class="clearfix w-100 d-md-none pb-1">
+			<div class="col-md-5 mb-md-0 mb-3 d-none d-md-block langs">
+				<a href="https://urlebird.com/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/us.png" class="flag" alt="us"></a>
+				<a href="https://urlebird.com/ru/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/ru.png" class="flag" alt="ru"></a>
+				<a href="https://urlebird.com/ua/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/ua.png" class="flag" alt="ua"></a>
+				<a href="https://urlebird.com/es/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/es.png" class="flag" alt="es"></a>
+				<a href="https://urlebird.com/it/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/it.png" class="flag" alt="it"></a>
+				<a href="https://urlebird.com/de/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/de.png" class="flag" alt="de"></a>
+				<a href="https://urlebird.com/fr/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/fr.png" class="flag" alt="fr"></a>	
+				<a href="https://urlebird.com/pt/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/pt.png" class="flag" alt="pt"></a>		
+			</div>
+			<div class="col-md-5 mb-md-0 mb-3 d-md-none langs">
+				<a href="https://urlebird.com/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/us.png" class="flag" alt="us"></a>
+				<a href="https://urlebird.com/ru/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/ru.png" class="flag" alt="ru"></a>
+				<a href="https://urlebird.com/ua/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/ua.png" class="flag" alt="ua"></a>
+				<a href="https://urlebird.com/es/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/es.png" class="flag" alt="es"></a>
+				<div class="mb-1"></div>
+				<a href="https://urlebird.com/it/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/it.png" class="flag" alt="it"></a>
+				<a href="https://urlebird.com/de/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/de.png" class="flag" alt="de"></a>
+				<a href="https://urlebird.com/fr/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/fr.png" class="flag" alt="fr"></a>	
+				<a href="https://urlebird.com/pt/search/?q=kicks"><img src="https://urlebird.com/tml/images/flags/pt.png" class="flag" alt="pt"></a>		
+			</div>
+			<hr class="clearfix w-100 d-md-none pb-1">	
+			<div class="col-md-12 mt-2 mb-1">
+				<span class="disclaimer">Urlebird is not associated with official TikTok. We do not host any content on our servers, all videos, photos and previews hosted only on TikTok servers and all rights reserved by their respective owners</span>
+			</div>							
+		</div>
+	</div>
+</footer>
+		<script>
+  function its_mobile() {
+    const toMatch = [/Android/i, /webOS/i, /iPhone/i, /iPad/i, /iPod/i, /BlackBerry/i, /Windows Phone/i];
+    return toMatch.some((toMatchItem) => {
+        return navigator.userAgent.match(toMatchItem);
+    });
+  }
+</script>
+<!-- 300x600
+<script src="//ads.themoneytizer.com/s/gen.js?type=3"></script> 
+<script src="//ads.themoneytizer.com/s/requestform.js?siteId=83467&formatId=3"></script> 
+-->
+
+<script>const country = 'HK';</script>
+
+
+<div id="83467-6"><script src="//ads.themoneytizer.com/s/gen.js?type=6"></script><script src="//ads.themoneytizer.com/s/requestform.js?siteId=83467&formatId=6"></script></div>
+
+
+
+<script defer src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+<script defer src="https://urlebird.com/tml/js/app.js?v=6.2"></script>
+
+<script async src="//cdnjs.cloudflare.com/ajax/libs/lazysizes/5.2.0/lazysizes.min.js"></script>
+
+<script defer src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+
+<script defer src="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<script async src="//cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+
+<script async src="//www.googletagmanager.com/gtag/js?id=UA-156932907-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-156932907-1');
+</script>
+	<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dc4bf5c2e760f04',t:'MTc3MzUwNjcxMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"b37deba67d544bf48d0c26d2f3d55145","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>

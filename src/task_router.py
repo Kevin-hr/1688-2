@@ -53,29 +53,33 @@ class TaskRouter:
         print(f"[Router] 识别到关键字: {keyword}  |  采集上限: {limit} |  排序: {sort_type or '默认'}")
 
         try:
-            # 使用 async with 管理单一浏览器 Session
-            async with self.scraper as agent:
-                # 步骤 1: 搜索获取链接列表
-                urls = await agent.scrape_1688(keyword, limit=limit, sort_type=sort_type)
+            # 手动管理浏览器生命周期，禁用反检测以提高稳定性
+            await self.scraper.start(use_anti_detect=False)
 
-                if not urls:
-                    return {"status": "failed", "error": "未找到相关商品链接"}
+            # 步骤 1: 搜索获取链接列表
+            urls = await self.scraper.scrape_1688(keyword, limit=limit, sort_type=sort_type)
 
-                results = []
-                # 步骤 2: 遍历链接并抓取深度详情（复用同一浏览器）
-                for i, url in enumerate(urls):
-                    print(f"[Router] 正在处理第 ({i+1}/{len(urls)}) 个商品详情...")
-                    try:
-                        data = await agent.scrape_product_detail(url)
-                        if data:
-                            results.append(data)
-                    except Exception as e:
-                        print(f"[Router] 获取链接 {url} 详情出错: {e}")
+            if not urls:
+                await self.scraper.close()
+                return {"status": "failed", "error": "未找到相关商品链接"}
 
-            # 浏览器在 async with 退出时自动关闭
+            results = []
+            # 步骤 2: 遍历链接并抓取深度详情（复用同一浏览器）
+            for i, url in enumerate(urls):
+                print(f"[Router] 正在处理第 ({i+1}/{len(urls)}) 个商品详情...")
+                try:
+                    data = await self.scraper.scrape_product_detail(url)
+                    if data:
+                        results.append(data)
+                except Exception as e:
+                    print(f"[Router] 获取链接 {url} 详情出错: {e}")
+
+            # 手动关闭浏览器
+            await self.scraper.close()
             return self._export_results(results, f"1688_{keyword[:10]}")
 
         except Exception as e:
+            await self.scraper.close()
             return {"status": "failed", "error": str(e)}
 
     async def route_url(self, url):
