@@ -24,6 +24,17 @@
 - [x] (Day 9) ✅ **`OzonTransformer` 接入翻译 API** — 中俄外语翻译（Google/Bing/Baidu）
 - [x] (Day 11) ✅ **新建 `selector_test.py` 稳定性探测工具**
 - [x] (Day 11) ✅ **完成项目进度审计与 v1.4.0 并行开发路线规划**
+- [x] (Day 12) ✅ **Ozon API 可靠性增强 v1.3.1**
+  - 添加 tenacity 重试机制（3次+指数退避）
+  - 添加 logging 日志记录（logs/ozon_api.log）
+  - 添加 tqdm 进度条显示
+  - 改进异常处理（OzonApiError）
+- [x] (Day 12) ✅ **配置客户 Ozon API 凭证**
+  - Client ID: 4030037
+  - API Key 已配置到 .env
+- [x] (Day 12) ✅ **更新项目文档**
+  - README.md 添加 API 配置说明
+  - ROADMAP.md 添加 v1.3.1 里程碑
 
 ### 开发流程 (Development Workflow)
 - **任务驱动**：使用 `task.md` 跟踪进度。
@@ -39,6 +50,12 @@
 - [ ] **路径 A**：修复 `selector_test.py` 逻辑并完成 1688 全局探测 (由 Agent-QA 领用)
 - [ ] **路径 B**：完善 `OzonTransformer` 中的 Ozon Attribute ID 映射，特别是 Brand/Color 字段 (由 Agent-Dev 领用)
 - [ ] **路径 D**：建立多 Agent 协作审计日志，防止冲突 (由 PM Agent 领用)
+
+### ✅ v1.3.1 今日完成 (2026-03-15)
+- [x] 6 Agent 并行分析项目架构
+- [x] 完成 Ozon API 改进（重试/日志/进度条/异常处理）
+- [x] 配置客户 API 凭证并验证有效性
+- [x] 更新 README.md / ROADMAP.md / task.md 文档
 
 ### 📅 计划中 (To-Do)
 - [ ] 对接 Ozon Seller API，实现 JSON → 直接上架自动化（需 API Key 验证联通性）

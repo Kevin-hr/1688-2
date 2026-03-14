@@ -178,7 +178,6 @@ class WebScraperAgent:
             viewport=context_options.get("viewport"),
             locale=context_options.get("locale"),
             timezone_id=context_options.get("timezone_id"),
-            languages=context_options.get("languages"),
             args=launch_args,
         )
 
@@ -222,6 +221,66 @@ class WebScraperAgent:
     # ================================================================== #
     # 智能等待工具方法
     # ================================================================== #
+
+    async def _check_anti_bot_detection(self, page) -> bool:
+        """
+        检测是否触发了反爬虫机制。
+
+        参数:
+            page: Playwright Page 对象
+
+        返回:
+            True 表示检测到反爬，False 表示正常
+        """
+        try:
+            # 获取页面文本内容
+            page_text = await page.evaluate("document.body.innerText")
+
+            # 检测常见反爬提示
+            anti_bot_keywords = [
+                "系统错误，请稍后重试",
+                "访问频率过快",
+                "请输入验证码",
+                "账号异常",
+                "操作过于频繁",
+                "系统繁忙",
+                "Sorry, system error",
+                "频繁请求",
+            ]
+
+            for keyword in anti_bot_keywords:
+                if keyword in page_text:
+                    print(f"[Scraper] ⚠️ 检测到反爬提示: {keyword}")
+                    return True
+
+            # 检测是否跳转到了登录页或验证码页
+            current_url = page.url
+            if "login" in current_url or "verify" in current_url:
+                print(f"[Scraper] ⚠️ 检测到跳转到了验证页面: {current_url}")
+                return True
+
+            return False
+
+        except Exception as e:
+            print(f"[Scraper] ⚠️ 反爬检测时出错: {e}")
+            return False
+
+    async def _restart_with_new_fingerprint(self):
+        """
+        关闭当前浏览器并使用新的指纹配置重新启动。
+        """
+        print("[Scraper] 正在关闭浏览器并使用新指纹重启...")
+
+        # 关闭现有浏览器
+        await self.close()
+
+        # 等待一段时间（指数退避）
+        await asyncio.sleep(2)
+
+        # 重新启动（会自动使用新的随机指纹）
+        await self.start(use_anti_detect=True)
+
+        print("[Scraper] ✅ 浏览器已使用新指纹重启")
 
     async def _smart_wait_for_any(self, page, selectors, timeout_ms=None):
         """
@@ -284,7 +343,7 @@ class WebScraperAgent:
     # 核心业务方法
     # ================================================================== #
 
-    async def scrape_1688(self, keyword, limit=10, sort_type=None):
+    async def scrape_1688(self, keyword, limit=10, sort_type=None, max_retries=3):
         """
         在 1688 上搜索关键字，并提取商品详情页链接列表。
 
@@ -292,6 +351,7 @@ class WebScraperAgent:
             keyword:   搜索关键词（中文），如 "猫咪玩具"
             limit:     最多返回的商品链接数量，默认 10
             sort_type: 排序规则（例如 "booked" 销量, "postTime" 最新）
+            max_retries: 最大重试次数（当检测到反爬时），默认 3
 
         返回:
             合法商品详情页 URL 字符串列表（可能为空列表）
@@ -299,125 +359,152 @@ class WebScraperAgent:
         self._ensure_started()
         page = self._page
 
-        try:
-            # 先访问 1688 首页，激活 Session Cookie
-            print("[Scraper] 正在访问 1688 首页以确保会话激活...")
-            await page.goto(
-                "https://www.1688.com/",
-                wait_until="domcontentloaded",
-                timeout=self.NAV_TIMEOUT_MS * 2,  # 首页允许更长超时
-            )
-            # 智能等待首页核心元素出现（替代旧版 asyncio.sleep(2)）
-            await self._smart_wait_for_any(
-                page,
-                [
-                    ".home-header",
-                    "#J_search_input",
-                    ".header-search",
-                    "input[type='text']",
-                ],
-                timeout_ms=8000,
-            )
-            await asyncio.sleep(self.MIN_COURTESY_DELAY)  # 最短礼貌延迟
-
-            # 1688 搜索接口要求关键词使用 GBK 编码（历史遗留编码格式）
+        # 重试循环（用于处理反爬检测）
+        for retry_round in range(max_retries):
             try:
-                encoded_kw = urllib.parse.quote(keyword, encoding="gbk")
-            except Exception:
-                encoded_kw = urllib.parse.quote(keyword)  # 回退：UTF-8
-
-            # 构造搜索 URL
-            search_url = (
-                f"https://s.1688.com/selloffer/offer_search.htm?keywords={encoded_kw}"
-            )
-
-            # 拼接排序参数
-            if sort_type:
-                search_url += f"&sortType={sort_type}"
-
-            print(f"[Scraper] 正在导航至搜索页: {search_url}")
-            await page.goto(
-                search_url, wait_until="domcontentloaded", timeout=self.NAV_TIMEOUT_MS
-            )
-
-            # 智能等待搜索结果出现（替代旧版 asyncio.sleep(5)）
-            print("[Scraper] 等待搜索结果渲染...")
-            hit_selector = await self._smart_wait_for_any(
-                page, self.SEARCH_ITEM_SELECTORS, timeout_ms=self.WAIT_TIMEOUT_MS
-            )
-
-            if not hit_selector:
-                # 首次等待未命中 → 触发滚动后重试
-                print("[Scraper] 首次等待未命中。正在滚动触发懒加载...")
-                await self._scroll_and_wait(page, scroll_distance=1000)
-                hit_selector = await self._smart_wait_for_any(
-                    page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
+                # 先访问 1688 首页，激活 Session Cookie
+                print("[Scraper] 正在访问 1688 首页以确保会话激活...")
+                await page.goto(
+                    "https://www.1688.com/",
+                    wait_until="domcontentloaded",
+                    timeout=self.NAV_TIMEOUT_MS * 2,  # 首页允许更长超时
                 )
 
-            if not hit_selector:
-                # 二次滚动（滚到底部）
-                print("[Scraper] 仍未命中。尝试滚动到页面底部...")
-                await self._scroll_and_wait(page, scroll_distance=0)
-                hit_selector = await self._smart_wait_for_any(
-                    page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
+                # 检测反爬
+                if await self._check_anti_bot_detection(page):
+                    if retry_round < max_retries - 1:
+                        print(f"[Scraper] 🔄 检测到反爬，正在重试 ({retry_round + 1}/{max_retries})...")
+                        await self._restart_with_new_fingerprint()
+                        page = self._page  # 获取新的页面对象
+                        continue
+                    else:
+                        print("[Scraper] ❌ 达到最大重试次数，放弃搜索")
+                        return []
+
+                # 智能等待首页核心元素出现（替代旧版 asyncio.sleep(2)）
+                await self._smart_wait_for_any(
+                    page,
+                    [
+                        ".home-header",
+                        "#J_search_input",
+                        ".header-search",
+                        "input[type='text']",
+                    ],
+                    timeout_ms=8000,
                 )
 
-            if not hit_selector:
-                # 全部策略失败 → 保存截图供人工诊断
-                print("[Scraper] ❌ 未找到搜索结果。保存调试截图...")
-                await page.screenshot(path="debug_search_no_items.png")
+                # 随机延迟，模拟人类操作
+                await asyncio.sleep(random.uniform(1.5, 3.0))
+
+                # 1688 搜索接口要求关键词使用 GBK 编码（历史遗留编码格式）
+                try:
+                    encoded_kw = urllib.parse.quote(keyword, encoding="gbk")
+                except Exception:
+                    encoded_kw = urllib.parse.quote(keyword)  # 回退：UTF-8
+
+                # 构造搜索 URL
+                search_url = (
+                    f"https://s.1688.com/selloffer/offer_search.htm?keywords={encoded_kw}"
+                )
+
+                # 拼接排序参数
+                if sort_type:
+                    search_url += f"&sortType={sort_type}"
+
+                print(f"[Scraper] 正在导航至搜索页: {search_url}")
+                await page.goto(
+                    search_url, wait_until="domcontentloaded", timeout=self.NAV_TIMEOUT_MS
+                )
+
+                # 检测反爬（搜索结果页）
+                if await self._check_anti_bot_detection(page):
+                    if retry_round < max_retries - 1:
+                        print(f"[Scraper] 🔄 检测到反爬，正在重试 ({retry_round + 1}/{max_retries})...")
+                        await self._restart_with_new_fingerprint()
+                        page = self._page
+                        continue
+                    else:
+                        print("[Scraper] ❌ 达到最大重试次数，放弃搜索")
+                        return []
+
+                # 智能等待搜索结果出现（替代旧版 asyncio.sleep(5)）
+                print("[Scraper] 等待搜索结果渲染...")
+                hit_selector = await self._smart_wait_for_any(
+                    page, self.SEARCH_ITEM_SELECTORS, timeout_ms=self.WAIT_TIMEOUT_MS
+                )
+
+                if not hit_selector:
+                    # 首次等待未命中 → 触发滚动后重试
+                    print("[Scraper] 首次等待未命中。正在滚动触发懒加载...")
+                    await self._scroll_and_wait(page, scroll_distance=1000)
+                    hit_selector = await self._smart_wait_for_any(
+                        page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
+                    )
+
+                if not hit_selector:
+                    # 二次滚动（滚到底部）
+                    print("[Scraper] 仍未命中。尝试滚动到页面底部...")
+                    await self._scroll_and_wait(page, scroll_distance=0)
+                    hit_selector = await self._smart_wait_for_any(
+                        page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
+                    )
+
+                if not hit_selector:
+                    # 全部策略失败 → 保存截图供人工诊断
+                    print("[Scraper] ❌ 未找到搜索结果。保存调试截图...")
+                    await page.screenshot(path="debug_search_no_items.png")
+                    return []
+
+                # 使用命中的选择器获取所有条目
+                items = await page.query_selector_all(hit_selector)
+                print(f"[Scraper] 使用选择器 '{hit_selector}' 找到 {len(items)} 个结果")
+
+                # 验证当前 URL（调试用）
+                print(f"[Scraper] 当前页面 URL: {page.url}")
+
+                # 提取合法商品详情页 URL
+                urls = []
+                for i, item in enumerate(items[:limit]):
+                    # 优先从条目元素获取 href
+                    href = await item.get_attribute("href")
+                    if not href:
+                        # 条目不是 <a> 标签，在内部查找子链接
+                        link_el = await item.query_selector("a")
+                        if link_el:
+                            href = await link_el.get_attribute("href")
+
+                    print(f"[Scraper] 条目 {i} 原始链接: {href}")
+
+                    if href:
+                        # 补全协议相对路径
+                        if not href.startswith("http"):
+                            href = "https:" + href
+
+                        # 白名单过滤：只保留真实商品详情页链接
+                        if any(
+                            domain in href
+                            for domain in [
+                                "detail.1688.com",
+                                "page.1688.com",
+                                "detail.m.1688.com",
+                            ]
+                        ):
+                            urls.append(href)
+                            print(f"[Scraper] ✅ 链接已验证: {href}")
+                        else:
+                            print(f"[Scraper] ⚠️ 链接被过滤: {href[:60]}")
+
+                return urls
+
+            except Exception as e:
+                print(f"[Scraper] 搜索过程出错: {e}。保存截图以供诊断。")
+                try:
+                    await page.screenshot(path="debug_search_fail.png")
+                except Exception:
+                    pass
                 return []
 
-            # 使用命中的选择器获取所有条目
-            items = await page.query_selector_all(hit_selector)
-            print(f"[Scraper] 使用选择器 '{hit_selector}' 找到 {len(items)} 个结果")
-
-            # 验证当前 URL（调试用）
-            print(f"[Scraper] 当前页面 URL: {page.url}")
-
-            # 提取合法商品详情页 URL
-            urls = []
-            for i, item in enumerate(items[:limit]):
-                # 优先从条目元素获取 href
-                href = await item.get_attribute("href")
-                if not href:
-                    # 条目不是 <a> 标签，在内部查找子链接
-                    link_el = await item.query_selector("a")
-                    if link_el:
-                        href = await link_el.get_attribute("href")
-
-                print(f"[Scraper] 条目 {i} 原始链接: {href}")
-
-                if href:
-                    # 补全协议相对路径
-                    if not href.startswith("http"):
-                        href = "https:" + href
-
-                    # 白名单过滤：只保留真实商品详情页链接
-                    if any(
-                        domain in href
-                        for domain in [
-                            "detail.1688.com",
-                            "page.1688.com",
-                            "detail.m.1688.com",
-                        ]
-                    ):
-                        urls.append(href)
-                        print(f"[Scraper] ✅ 链接已验证: {href}")
-                    else:
-                        print(f"[Scraper] ⚠️ 链接被过滤: {href[:60]}")
-
-            return urls
-
-        except Exception as e:
-            print(f"[Scraper] 搜索过程出错: {e}。保存截图以供诊断。")
-            try:
-                await page.screenshot(path="debug_search_fail.png")
-            except Exception:
-                pass
-            return []
-
-    async def scrape_product_detail(self, url):
+    async def scrape_product_detail(self, url, max_retries=3):
         """
         抓取单个商品详情页的完整信息和主图。
 
@@ -425,9 +512,12 @@ class WebScraperAgent:
           - 复用同一个浏览器 Tab 导航到详情页，不再新开浏览器
           - 使用 wait_for_selector 替代 asyncio.sleep(5) 等待 JS 渲染
           - 更新选择器列表以适配最新 DOM 结构
+        改进（v1.3.2）：
+          - 添加反爬检测和重试机制
 
         参数:
             url: 1688 商品详情页 URL
+            max_retries: 最大重试次数（当检测到反爬时），默认 3
 
         返回:
             商品信息字典（包含 title/price/url/attributes/images/description），
@@ -436,124 +526,137 @@ class WebScraperAgent:
         self._ensure_started()
         page = self._page
 
-        try:
-            print(f"[Scraper] 正在抓取详情页: {url}")
-
-            # 使用 domcontentloaded 而非 networkidle（详情页有持续埋点请求）
-            await page.goto(
-                url,
-                wait_until="domcontentloaded",
-                timeout=self.NAV_TIMEOUT_MS,
-            )
-
-            # 智能等待商品核心内容出现（替代旧版 asyncio.sleep(5)）
-            await self._smart_wait_for_any(
-                page,
-                [
-                    ".title-content",
-                    ".offer-title",
-                    ".price-value",
-                    ".price",
-                    "h1",
-                    ".sku-title",
-                    ".module-title",
-                ],
-                timeout_ms=self.WAIT_TIMEOUT_MS,
-            )
-            # 最短礼貌延迟
-            await asyncio.sleep(self.MIN_COURTESY_DELAY)
-
-            # ---- 提取商品标题 ----
-            title = "未知商品"
-            for sel in self.TITLE_SELECTORS:
-                try:
-                    if "meta" in sel:
-                        t = await page.get_attribute(sel, "content")
-                    else:
-                        t = await page.inner_text(sel)
-
-                    if t and t.strip() and len(t.strip()) > 5:
-                        title = t.strip()
-                        # 排除店铺名
-                        if "有限公司" not in title and "店" not in title:
-                            break
-                except Exception:
-                    continue
-
-            # ---- 提取商品价格 ----
-            price = "N/A"
-            for sel in self.PRICE_SELECTORS:
-                try:
-                    p_text = await page.inner_text(sel)
-                    if p_text and p_text.strip():
-                        price = p_text.strip()
-                        break
-                except Exception:
-                    continue
-
-            # ---- 提取商品属性规格 ----
-            attributes = {}
-            attr_rows = await page.query_selector_all(self.ATTRIBUTE_ROW_SELECTOR)
-            for row in attr_rows:
-                try:
-                    name_el = await row.query_selector(self.ATTRIBUTE_NAME_SELECTOR)
-                    val_el = await row.query_selector(self.ATTRIBUTE_VALUE_SELECTOR)
-                    if name_el and val_el:
-                        name_text = await name_el.inner_text()
-                        val_text = await val_el.inner_text()
-                        attributes[name_text.strip()] = val_text.strip()
-                except Exception:
-                    continue
-
-            # ---- 提取商品主图列表 ----
-            image_urls = []
-            img_els = await page.query_selector_all(self.IMAGE_SELECTOR)
-            for img in img_els:
-                src = await img.get_attribute("src")
-                if src:
-                    # 替换缩略图后缀为高清版本
-                    src = src.replace(".60x60", ".400x400").replace(
-                        ".40x40", ".400x400"
-                    )
-                    if not src.startswith("http"):
-                        src = "https:" + src
-                    image_urls.append(src)
-
-            # 保序去重
-            image_urls = list(dict.fromkeys(image_urls))
-
-            # ---- 组装商品信息字典 ----
-            product_info = {
-                "title": title,
-                "price": price,
-                "url": url,
-                "attributes": attributes,
-                "images": image_urls,
-                "description": "\n".join(
-                    [f"- **{k}**: {v}" for k, v in attributes.items()]
-                ),
-            }
-
-            # ---- 持久化落盘 ----
-            product_dir, image_dir = self.file_manager.create_product_dir(title)
-            self.file_manager.save_details(product_dir, product_info)
-
-            # 下载主图（限制前 5 张）— 使用 FileManager 的多线程下载
-            download_urls = image_urls[:5]
-            if download_urls:
-                self.file_manager.download_images_parallel(download_urls, image_dir)
-
-            print(f"[Scraper] ✅ 成功抓取商品: {title[:30]}")
-
-            # 礼貌延迟：模拟人类浏览节奏，降低反爬触发风险
-            await asyncio.sleep(self.MIN_COURTESY_DELAY)
-
-            return product_info
-
-        except Exception as e:
-            print(f"[Scraper] ❌ 抓取出错 {url}: {e}")
+        # 重试循环
+        for retry_round in range(max_retries):
             try:
-                await page.screenshot(path="debug_detail_fail.png")
-            except Exception:
-                pass
-            return None
+                print(f"[Scraper] 正在抓取详情页: {url}")
+
+                # 使用 domcontentloaded 而非 networkidle（详情页有持续埋点请求）
+                await page.goto(
+                    url,
+                    wait_until="domcontentloaded",
+                    timeout=self.NAV_TIMEOUT_MS,
+                )
+
+                # 检测反爬
+                if await self._check_anti_bot_detection(page):
+                    if retry_round < max_retries - 1:
+                        print(f"[Scraper] 🔄 检测到反爬，正在重试 ({retry_round + 1}/{max_retries})...")
+                        await self._restart_with_new_fingerprint()
+                        page = self._page
+                        continue
+                    else:
+                        print("[Scraper] ❌ 达到最大重试次数，放弃抓取")
+                        return None
+
+                # 智能等待商品核心内容出现（替代旧版 asyncio.sleep(5)）
+                await self._smart_wait_for_any(
+                    page,
+                    [
+                        ".title-content",
+                        ".offer-title",
+                        ".price-value",
+                        ".price",
+                        "h1",
+                        ".sku-title",
+                        ".module-title",
+                    ],
+                    timeout_ms=self.WAIT_TIMEOUT_MS,
+                )
+                # 最短礼貌延迟
+                await asyncio.sleep(self.MIN_COURTESY_DELAY)
+
+                # ---- 提取商品标题 ----
+                title = "未知商品"
+                for sel in self.TITLE_SELECTORS:
+                    try:
+                        if "meta" in sel:
+                            t = await page.get_attribute(sel, "content")
+                        else:
+                            t = await page.inner_text(sel)
+
+                        if t and t.strip() and len(t.strip()) > 5:
+                            title = t.strip()
+                            # 排除店铺名
+                            if "有限公司" not in title and "店" not in title:
+                                break
+                    except Exception:
+                        continue
+
+                # ---- 提取商品价格 ----
+                price = "N/A"
+                for sel in self.PRICE_SELECTORS:
+                    try:
+                        p_text = await page.inner_text(sel)
+                        if p_text and p_text.strip():
+                            price = p_text.strip()
+                            break
+                    except Exception:
+                        continue
+
+                # ---- 提取商品属性规格 ----
+                attributes = {}
+                attr_rows = await page.query_selector_all(self.ATTRIBUTE_ROW_SELECTOR)
+                for row in attr_rows:
+                    try:
+                        name_el = await row.query_selector(self.ATTRIBUTE_NAME_SELECTOR)
+                        val_el = await row.query_selector(self.ATTRIBUTE_VALUE_SELECTOR)
+                        if name_el and val_el:
+                            name_text = await name_el.inner_text()
+                            val_text = await val_el.inner_text()
+                            attributes[name_text.strip()] = val_text.strip()
+                    except Exception:
+                        continue
+
+                # ---- 提取商品主图列表 ----
+                image_urls = []
+                img_els = await page.query_selector_all(self.IMAGE_SELECTOR)
+                for img in img_els:
+                    src = await img.get_attribute("src")
+                    if src:
+                        # 替换缩略图后缀为高清版本
+                        src = src.replace(".60x60", ".400x400").replace(
+                            ".40x40", ".400x400"
+                        )
+                        if not src.startswith("http"):
+                            src = "https:" + src
+                        image_urls.append(src)
+
+                # 保序去重
+                image_urls = list(dict.fromkeys(image_urls))
+
+                # ---- 组装商品信息字典 ----
+                product_info = {
+                    "title": title,
+                    "price": price,
+                    "url": url,
+                    "attributes": attributes,
+                    "images": image_urls,
+                    "description": "\n".join(
+                        [f"- **{k}**: {v}" for k, v in attributes.items()]
+                    ),
+                }
+
+                # ---- 持久化落盘 ----
+                product_dir, image_dir = self.file_manager.create_product_dir(title)
+                self.file_manager.save_details(product_dir, product_info)
+
+                # 下载主图（限制前 5 张）— 使用 FileManager 的多线程下载
+                download_urls = image_urls[:5]
+                if download_urls:
+                    self.file_manager.download_images_parallel(download_urls, image_dir)
+
+                print(f"[Scraper] ✅ 成功抓取商品: {title[:30]}")
+
+                # 礼貌延迟：模拟人类浏览节奏，降低反爬触发风险
+                await asyncio.sleep(self.MIN_COURTESY_DELAY)
+
+                return product_info
+
+            except Exception as e:
+                print(f"[Scraper] ❌ 抓取出错 {url}: {e}")
+                try:
+                    await page.screenshot(path="debug_detail_fail.png")
+                except Exception:
+                    pass
+                return None
