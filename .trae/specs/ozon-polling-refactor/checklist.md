@@ -1,0 +1,5 @@
+- [ ] `src` folder is accessible and importable.
+- [ ] `python check_task_status.py <task_id> --watch` polls until completion.
+- [ ] `python upload_to_ozon.py` uploads and waits for success/failure.
+- [ ] `WebScraperAgent` code is refactored into components.
+- [ ] `python test_all_modules.py` passes successfully.

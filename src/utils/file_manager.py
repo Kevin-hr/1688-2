@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 文件管理器模块 (File Manager) — v1.3.0
 -----------------------------------------
@@ -240,3 +241,7 @@ class FileManager:
             f.write(f"**来源链接**: {details.get('url', 'N/A')}\n\n")
             f.write("## 详细描述/规格属性\n")
             f.write(details.get('description', '暂无详细描述。'))
+=======
+class FileManager:
+    pass
+>>>>>>> release/v1.3.3-hotfix

@@ -1,0 +1,43 @@
+{
+  "real_product": true,
+  "compliant": true,
+  "visual_proof": "C:\\Users\\52648\\Documents\\GitHub\\1688-2 - trae\\1688_products\\952473803779\\scrape_visual_proof.png",
+  "data": {
+    "offer_id": "952473803779",
+    "name": "Неизвестное название",
+    "price": "0.00",
+    "vat": "0",
+    "barcode": "",
+    "description_category_id": 17028760,
+    "primary_image": "",
+    "images": [],
+    "weight": 500,
+    "width": 100,
+    "height": 100,
+    "depth": 100,
+    "dimension_unit": "mm",
+    "weight_unit": "g",
+    "currency_code": "CNY",
+    "attributes": [
+      {
+        "complex_id": 0,
+        "id": 85,
+        "values": [
+          {
+            "dictionary_value_id": 0,
+            "value": "No Brand"
+          }
+        ]
+      },
+      {
+        "complex_id": 0,
+        "id": 9048,
+        "values": [
+          {
+            "value": "Неизвестное название"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -33,7 +33,13 @@ def main():
     if len(sys.argv) > 1:
         json_path = sys.argv[1]
     else:
+<<<<<<< HEAD
         json_path = os.path.abspath(os.path.join("1688_products", "ozon_export.json"))
+=======
+        # json_path = os.path.abspath(os.path.join("1688_products", "ozon_export.json"))
+        # 修正：OzonTransformer 默认输出到根目录的 ozon_export.json
+        json_path = os.path.abspath("ozon_export.json")
+>>>>>>> release/v1.3.3-hotfix
         
     print(f"📁 被指定的数据集文件: {json_path}")
     
@@ -54,6 +60,14 @@ def main():
     if task_id:
         print(f"🎉 成功！推送任务已启动，Ozon平台正在解析数据流...")
         print(f"   查询追踪的 Task ID 为 = {task_id}")
+<<<<<<< HEAD
+=======
+        
+        # Poll for completion
+        print("\n⏳ 正在轮询任务状态...")
+        ozon_manager.poll_task_status(task_id)
+        
+>>>>>>> release/v1.3.3-hotfix
     else:
         print("⚠️ 发送动作中止，有异常发生！请向上一级检查错误日志输出与接口报错内容。")
 

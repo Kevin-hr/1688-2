@@ -15,6 +15,10 @@
 import os
 import asyncio
 import json
+<<<<<<< HEAD
+=======
+import logging
+>>>>>>> release/v1.3.3-hotfix
 from typing import Optional, List, Dict
 from pathlib import Path
 
@@ -29,12 +33,20 @@ try:
     HAS_FASTMCP = True
 except ImportError:
     HAS_FASTMCP = False
+<<<<<<< HEAD
     print("Warning: fastmcp not installed. Using stdio server instead.")
+=======
+    print("Warning: fastmcp not installed. Trying alternative implementation...")
+>>>>>>> release/v1.3.3-hotfix
 
 from src.task_router import TaskRouter
 from src.agents.web_scraper_agent import WebScraperAgent
 from src.utils.ozon_transformer import OzonTransformer
+<<<<<<< HEAD
 from src.utils.ozon_api import OzonApiManager
+=======
+from src.utils.ozon_api import OzonApiManager, OzonApiError
+>>>>>>> release/v1.3.3-hotfix
 from src.utils.excel_exporter import ExcelExporter
 from src.utils.file_manager import FileManager
 
@@ -43,6 +55,22 @@ from src.utils.file_manager import FileManager
 PROJECT_ROOT = Path(__file__).parent
 OUTPUT_DIR = PROJECT_ROOT / "1688_products"
 
+<<<<<<< HEAD
+=======
+# 日志配置
+LOG_DIR = PROJECT_ROOT / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] [MCP] %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_DIR / "mcp_server.log", encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("MCP")
+
+>>>>>>> release/v1.3.3-hotfix
 
 def setup_mcp():
     """创建并配置 MCP 服务器"""
@@ -67,9 +95,21 @@ async def search_products(keyword: str, limit: int = 5) -> Dict:
     Returns:
         包含商品列表和文件路径的字典
     """
+<<<<<<< HEAD
     router = TaskRouter()
     result = await router.route(keyword, limit=limit)
     return result
+=======
+    logger.info(f"搜索商品: keyword={keyword}, limit={limit}")
+    try:
+        router = TaskRouter()
+        result = await router.route(keyword, limit=limit)
+        logger.info(f"搜索完成: status={result.get('status')}, count={result.get('count', 0)}")
+        return result
+    except Exception as e:
+        logger.error(f"搜索失败: {e}")
+        return {"status": "error", "error": str(e)}
+>>>>>>> release/v1.3.3-hotfix
 
 
 async def scrape_product(url: str) -> Dict:
@@ -82,9 +122,21 @@ async def scrape_product(url: str) -> Dict:
     Returns:
         包含商品数据的字典
     """
+<<<<<<< HEAD
     router = TaskRouter()
     result = await router.route_url(url)
     return result
+=======
+    logger.info(f"采集商品: {url}")
+    try:
+        router = TaskRouter()
+        result = await router.route_url(url)
+        logger.info(f"采集完成: status={result.get('status')}")
+        return result
+    except Exception as e:
+        logger.error(f"采集失败: {e}")
+        return {"status": "error", "error": str(e)}
+>>>>>>> release/v1.3.3-hotfix
 
 
 def transform_to_ozon(products: List[Dict]) -> Dict:
@@ -97,9 +149,23 @@ def transform_to_ozon(products: List[Dict]) -> Dict:
     Returns:
         Ozon 格式的商品数据
     """
+<<<<<<< HEAD
     transformer = OzonTransformer()
     ozon_products = transformer.transform_batch(products)
     return ozon_products
+=======
+    logger.info(f"转换商品: {len(products)} 个")
+    try:
+        transformer = OzonTransformer()
+        ozon_products = transformer.transform_batch(products)
+        # 保存转换后的JSON
+        json_path = transformer.export_json(ozon_products)
+        logger.info(f"转换完成: {json_path}")
+        return {"products": ozon_products, "json_path": json_path}
+    except Exception as e:
+        logger.error(f"转换失败: {e}")
+        return {"error": str(e)}
+>>>>>>> release/v1.3.3-hotfix
 
 
 def export_excel(products: List[Dict], filename: str = None) -> str:
@@ -113,11 +179,25 @@ def export_excel(products: List[Dict], filename: str = None) -> str:
     Returns:
         Excel 文件路径
     """
+<<<<<<< HEAD
     exporter = ExcelExporter(output_dir=str(OUTPUT_DIR))
     if filename and not filename.endswith('.xlsx'):
         filename += '.xlsx'
     filepath = exporter.export(products, filename=filename)
     return filepath
+=======
+    logger.info(f"导出Excel: {len(products)} 个商品")
+    try:
+        exporter = ExcelExporter(output_dir=str(OUTPUT_DIR))
+        if filename and not filename.endswith('.xlsx'):
+            filename += '.xlsx'
+        filepath = exporter.export(products, filename=filename)
+        logger.info(f"Excel导出完成: {filepath}")
+        return filepath
+    except Exception as e:
+        logger.error(f"Excel导出失败: {e}")
+        return f"导出失败: {str(e)}"
+>>>>>>> release/v1.3.3-hotfix
 
 
 def upload_to_ozon(json_path: str = None) -> Dict:
@@ -133,20 +213,52 @@ def upload_to_ozon(json_path: str = None) -> Dict:
     if json_path is None:
         json_path = str(OUTPUT_DIR / "ozon_export.json")
 
+<<<<<<< HEAD
     try:
         api_manager = OzonApiManager()
         task_id = api_manager.upload_products(json_path)
+=======
+    logger.info(f"上传Ozon: {json_path}")
+
+    # 检查API凭证
+    from dotenv import load_dotenv
+    load_dotenv()
+    client_id = os.getenv("OZON_CLIENT_ID")
+    api_key = os.getenv("OZON_API_KEY")
+
+    if not client_id or not api_key:
+        logger.warning("Ozon API凭证未配置")
+        return {
+            "status": "error",
+            "error": "Ozon API凭证未配置。请在.env文件中设置 OZON_CLIENT_ID 和 OZON_API_KEY",
+            "json_path": json_path
+        }
+
+    try:
+        api_manager = OzonApiManager()
+        task_id = api_manager.upload_products(json_path)
+        logger.info(f"上传成功: task_id={task_id}")
+>>>>>>> release/v1.3.3-hotfix
         return {
             "status": "success",
             "task_id": task_id,
             "json_path": json_path
         }
+<<<<<<< HEAD
     except Exception as e:
         return {
             "status": "error",
             "error": str(e),
             "json_path": json_path
         }
+=======
+    except OzonApiError as e:
+        logger.error(f"Ozon API错误: {e}")
+        return {"status": "error", "error": f"Ozon API错误: {str(e)}", "json_path": json_path}
+    except Exception as e:
+        logger.error(f"上传失败: {e}")
+        return {"status": "error", "error": str(e), "json_path": json_path}
+>>>>>>> release/v1.3.3-hotfix
 
 
 def get_ozon_products() -> List[Dict]:
@@ -158,11 +270,24 @@ def get_ozon_products() -> List[Dict]:
     """
     json_path = OUTPUT_DIR / "ozon_export.json"
     if not json_path.exists():
+<<<<<<< HEAD
         return []
 
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
         return data.get('products', [])
+=======
+        logger.warning(f"Ozon导出文件不存在: {json_path}")
+        return []
+
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get('products', [])
+    except Exception as e:
+        logger.error(f"读取Ozon商品失败: {e}")
+        return []
+>>>>>>> release/v1.3.3-hotfix
 
 
 # ========== FastMCP Server ==========
@@ -181,8 +306,17 @@ if HAS_FASTMCP:
         Returns:
             JSON 格式的采集结果，包含商品数量和文件路径
         """
+<<<<<<< HEAD
         result = await search_products(keyword, limit)
         return json.dumps(result, indent=2, ensure_ascii=False)
+=======
+        try:
+            result = await search_products(keyword, limit)
+            return json.dumps(result, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"MCP search_1688 错误: {e}")
+            return json.dumps({"status": "error", "error": str(e)}, indent=2, ensure_ascii=False)
+>>>>>>> release/v1.3.3-hotfix
 
     @mcp.tool()
     async def scrape_1688_url(url: str) -> str:
@@ -195,8 +329,17 @@ if HAS_FASTMCP:
         Returns:
             JSON 格式的商品详情
         """
+<<<<<<< HEAD
         result = await scrape_product(url)
         return json.dumps(result, indent=2, ensure_ascii=False)
+=======
+        try:
+            result = await scrape_product(url)
+            return json.dumps(result, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"MCP scrape_1688_url 错误: {e}")
+            return json.dumps({"status": "error", "error": str(e)}, indent=2, ensure_ascii=False)
+>>>>>>> release/v1.3.3-hotfix
 
     @mcp.tool()
     def transform_1688_to_ozon(products_json: str) -> str:
@@ -214,8 +357,17 @@ if HAS_FASTMCP:
         except json.JSONDecodeError:
             return json.dumps({"error": "Invalid JSON input"}, ensure_ascii=False)
 
+<<<<<<< HEAD
         result = transform_to_ozon(products)
         return json.dumps(result, indent=2, ensure_ascii=False)
+=======
+        try:
+            result = transform_to_ozon(products)
+            return json.dumps(result, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"MCP transform_1688_to_ozon 错误: {e}")
+            return json.dumps({"error": str(e)}, ensure_ascii=False)
+>>>>>>> release/v1.3.3-hotfix
 
     @mcp.tool()
     def export_1688_to_excel(products_json: str, filename: str = None) -> str:
@@ -234,8 +386,17 @@ if HAS_FASTMCP:
         except json.JSONDecodeError:
             return json.dumps({"error": "Invalid JSON input"}, ensure_ascii=False)
 
+<<<<<<< HEAD
         filepath = export_excel(products, filename)
         return json.dumps({"excel_path": filepath}, ensure_ascii=False)
+=======
+        try:
+            filepath = export_excel(products, filename)
+            return json.dumps({"excel_path": filepath, "status": "success"}, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"MCP export_1688_to_excel 错误: {e}")
+            return json.dumps({"error": str(e)}, ensure_ascii=False)
+>>>>>>> release/v1.3.3-hotfix
 
     @mcp.tool()
     def get采集状态() -> str:
@@ -245,6 +406,7 @@ if HAS_FASTMCP:
         Returns:
             JSON 格式的状态信息
         """
+<<<<<<< HEAD
         files = []
         if OUTPUT_DIR.exists():
             for f in OUTPUT_DIR.glob("*.xlsx"):
@@ -258,6 +420,35 @@ if HAS_FASTMCP:
             "total_files": len(files)
         }
         return json.dumps(result, indent=2, ensure_ascii=False)
+=======
+        try:
+            files = []
+            subdirs = []
+            if OUTPUT_DIR.exists():
+                # 列出所有Excel文件
+                for f in OUTPUT_DIR.glob("*.xlsx"):
+                    files.append({"name": f.name, "size": f.stat().st_size, "type": "excel"})
+                # 列出所有JSON文件
+                for f in OUTPUT_DIR.glob("*.json"):
+                    files.append({"name": f.name, "size": f.stat().st_size, "type": "json"})
+                # 列出商品目录
+                for d in OUTPUT_DIR.iterdir():
+                    if d.is_dir() and not d.name.startswith('.'):
+                        subdirs.append({"name": d.name, "type": "product_dir"})
+
+            result = {
+                "status": "success",
+                "output_dir": str(OUTPUT_DIR),
+                "files": files,
+                "subdirs": subdirs,
+                "total_files": len(files),
+                "total_products": len(subdirs)
+            }
+            return json.dumps(result, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"MCP get采集状态 错误: {e}")
+            return json.dumps({"status": "error", "error": str(e)}, indent=2, ensure_ascii=False)
+>>>>>>> release/v1.3.3-hotfix
 
     @mcp.tool()
     def upload_ozon(json_path: str = None) -> str:
@@ -295,11 +486,39 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="1688 MCP Server")
     parser.add_argument("--port", type=int, default=8080, help="Server port")
     parser.add_argument("command", nargs="?", help="Command: serve")
+<<<<<<< HEAD
     args = parser.parse_args()
 
     if HAS_FASTMCP:
+=======
+    parser.add_argument("--mode", type=str, default="mcp", choices=["mcp", "cli"], help="运行模式: mcp=MCP服务, cli=命令行")
+    parser.add_argument("--url", type=str, help="采集URL (cli模式)")
+    parser.add_argument("--keyword", type=str, help="搜索关键词 (cli模式)")
+    parser.add_argument("--limit", type=int, default=5, help="采集数量限制")
+    args = parser.parse_args()
+
+    if args.mode == "cli":
+        # CLI 模式：直接执行命令
+        import asyncio
+        async def run_cli():
+            if args.url:
+                result = await scrape_product(args.url)
+            elif args.keyword:
+                result = await search_products(args.keyword, args.limit)
+            else:
+                print("请提供 --url 或 --keyword 参数")
+                return
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+
+        asyncio.run(run_cli())
+    elif HAS_FASTMCP:
+>>>>>>> release/v1.3.3-hotfix
         print(f"Starting 1688 MCP Server on port {args.port}...")
         mcp.run(transport="stdio")
     else:
         print("FastMCP not installed. Server cannot start.")
         print("Install with: pip install fastmcp")
+<<<<<<< HEAD
+=======
+        print("或使用 CLI 模式: python mcp_server.py --mode cli --url <URL>")
+>>>>>>> release/v1.3.3-hotfix

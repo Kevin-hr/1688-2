@@ -48,8 +48,13 @@
 
 ### 🏃 进行中 (In Progress)
 - [ ] **路径 A**：修复 `selector_test.py` 逻辑并完成 1688 全局探测 (由 Agent-QA 领用)
+<<<<<<< HEAD
 - [ ] **路径 B**：完善 `OzonTransformer` 中的 Ozon Attribute ID 映射，特别是 Brand/Color 字段 (由 Agent-Dev 领用)
 - [ ] **路径 D**：建立多 Agent 协作审计日志，防止冲突 (由 PM Agent 领用)
+=======
+- [ ] **路径 D**：建立多 Agent 协作审计日志，防止冲突 (由 PM Agent 领用)
+- [x] **路径 B**：完善 `OzonTransformer` 中的 Ozon Attribute ID 映射，特别是 Brand/Color/Material 字段
+>>>>>>> release/v1.3.3-hotfix
 
 ### ✅ v1.3.1 今日完成 (2026-03-15)
 - [x] 6 Agent 并行分析项目架构
@@ -57,6 +62,33 @@
 - [x] 配置客户 API 凭证并验证有效性
 - [x] 更新 README.md / ROADMAP.md / task.md 文档
 
+<<<<<<< HEAD
 ### 📅 计划中 (To-Do)
 - [ ] 对接 Ozon Seller API，实现 JSON → 直接上架自动化（需 API Key 验证联通性）
 - [ ] 引入 `src/agents/web_scraper_agent.py` 的微重构成单一职能类
+=======
+### ✅ v1.3.2 今日完成 (2026-03-15) - ReAct 闭环修复
+- [x] 修复 1688 登录 Cookie 过期问题
+- [x] 修复 headless 模式导致图片无法加载问题
+- [x] 更新图片选择器适配 2026 版 1688 DOM
+- [x] 验证 URL 直抓功能：图片94张 + 属性2项
+- [x] 更新 ROADMAP.md
+
+### ✅ v1.3.3 Ozon 联调大获全胜 (2026-03-15) - 真实性大审计
+- [x] **修复致命 API 错误**: 补全 Ozon API `/v3/product/import` 必需的 `type_id` 字段，解决 400 Bad Request。
+- [x] **图片指纹过滤**: `WebScraperAgent` 增加黑名单机制，自动剔除 `.svg`/`.tps` 等 1688 装修/UI 图标。
+- [x] **视觉存证系统**: 详情抓取时自动生成 `scrape_visual_proof.png`，确保数据“真实、可见、可溯源”。
+- [x] **属性映射增强**: 完成 Brand/Material/Color 的 Ozon ID 自动映射适配。
+- [x] **实事求是审计**: 成功通过 `force_audit.py` 完成“真实商品”全链路闭环，获得有效 Task ID `3934075371`。
+
+### ✅ v1.4.0 重构与增强 (2026-03-15) - 架构重建
+- [x] **恢复核心代码**: 修复丢失的 `src/` 目录结构，重建 API 和 Scraper 模块。
+- [x] **实现 Task 轮询**: `upload_to_ozon.py` 和 `check_task_status.py` 增加自动轮询功能。
+- [x] **重构 WebScraperAgent**: 将单一文件拆分为 Navigator, Extractor, Downloader 组件。
+- [x] **验证全模块**: 通过 `test_all_modules.py` 验证所有功能模块正常运行。
+
+### 📅 计划中 (To-Do)
+- [x] 对接 Ozon Seller API，实现 JSON → 直接上架自动化（已完成真实 Task 上传验证）
+- [x] 引入 `src/agents/web_scraper_agent.py` 的微重构成单一职能类
+- [x] 实现 Ozon Task Status Polling (Task 状态自动轮询)
+>>>>>>> release/v1.3.3-hotfix
