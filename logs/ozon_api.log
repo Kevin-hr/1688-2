@@ -32,3 +32,152 @@
 [2026-03-15 08:47:23] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3934075371
 [2026-03-15 09:56:11] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
 [2026-03-15 09:56:14] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:01:07] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:05:54] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:05:56] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:07:40] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:07:40] [OzonApi] INFO - 开始上传商品，文件路径: C:\Users\52648\Documents\GitHub\1688-2\1688_products\ozon_export.json
+[2026-03-15 21:07:40] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 21:07:40] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 21:07:41] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:07:41] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937263619
+[2026-03-15 21:07:41] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937263619
+[2026-03-15 21:07:49] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:07:50] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:09:46] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:10:48] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:10:48] [OzonApi] INFO - 开始上传商品，文件路径: ozon_audit_upload.json
+[2026-03-15 21:10:48] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 21:10:48] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 21:10:50] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:10:50] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937276767
+[2026-03-15 21:10:50] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937276767
+[2026-03-15 21:10:58] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:10:59] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:11:58] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:12:00] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:18:39] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:18:39] [OzonApi] INFO - 开始上传商品，文件路径: ozon_audit_upload.json
+[2026-03-15 21:18:39] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 21:18:39] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 21:18:40] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:18:40] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937309029
+[2026-03-15 21:18:40] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937309029
+[2026-03-15 21:18:41] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:18:41] [OzonApi] INFO - 开始上传商品，文件路径: C:\Users\52648\Documents\GitHub\1688-2\1688_products\ozon_export.json
+[2026-03-15 21:18:41] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 21:18:41] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 21:18:42] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:18:42] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937309179
+[2026-03-15 21:18:42] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937309179
+[2026-03-15 21:18:49] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:18:50] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:18:53] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:18:54] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:19:10] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:19:21] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 21:19:21] [OzonApi] INFO - 开始轮询 Task 3937309179 状态，间隔 5s，超时 60s
+[2026-03-15 21:19:23] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 21:19:23] [OzonApi] INFO - Task 3937309179 处理完成
+[2026-03-15 22:08:46] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:08:46] [OzonApi] INFO - 开始上传商品，文件路径: C:\Users\52648\Documents\GitHub\1688-2\1688_products\ozon_export.json
+[2026-03-15 22:08:46] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:08:46] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:08:48] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:08:48] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937499617
+[2026-03-15 22:08:48] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937499617
+[2026-03-15 22:08:55] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:08:57] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:09:39] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:09:39] [OzonApi] INFO - 开始上传商品，文件路径: ozon_audit_upload.json
+[2026-03-15 22:09:39] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:09:39] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:09:40] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:09:40] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937502547
+[2026-03-15 22:09:40] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937502547
+[2026-03-15 22:09:46] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:09:48] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:10:51] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:10:51] [OzonApi] INFO - 开始上传商品，文件路径: 1688_products/ozon_final_upload.json
+[2026-03-15 22:10:51] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:10:51] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:10:52] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:10:52] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937507048
+[2026-03-15 22:10:52] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937507048
+[2026-03-15 22:11:00] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:11:01] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:11:31] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:11:31] [OzonApi] INFO - 开始上传商品，文件路径: 1688_products/ozon_cat_upload.json
+[2026-03-15 22:11:31] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:11:31] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:11:34] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:11:34] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937509608
+[2026-03-15 22:11:34] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937509608
+[2026-03-15 22:11:41] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:11:42] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:12:26] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:12:26] [OzonApi] INFO - 开始上传商品，文件路径: 1688_products/ozon_v2_upload.json
+[2026-03-15 22:12:26] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:12:26] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:12:28] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:12:28] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937513610
+[2026-03-15 22:12:28] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937513610
+[2026-03-15 22:12:35] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:12:36] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:13:32] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:13:32] [OzonApi] INFO - 开始上传商品，文件路径: test_cat_0.json
+[2026-03-15 22:13:32] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:13:32] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:13:34] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:13:34] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937518291
+[2026-03-15 22:13:34] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937518291
+[2026-03-15 22:13:40] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:13:41] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:14:29] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:14:29] [OzonApi] INFO - 开始上传商品，文件路径: test_cat_0.json
+[2026-03-15 22:14:29] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:14:29] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:14:31] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:14:31] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937522054
+[2026-03-15 22:14:31] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937522054
+[2026-03-15 22:14:37] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:14:39] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:07] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:15:07] [OzonApi] INFO - 开始上传商品，文件路径: test_catid_17027484.json
+[2026-03-15 22:15:07] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:15:07] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:15:08] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:08] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937524745
+[2026-03-15 22:15:08] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937524745
+[2026-03-15 22:15:09] [OzonApi] INFO - 开始上传商品，文件路径: test_catid_17028000.json
+[2026-03-15 22:15:09] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:15:09] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:15:10] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:10] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937524926
+[2026-03-15 22:15:10] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937524926
+[2026-03-15 22:15:11] [OzonApi] INFO - 开始上传商品，文件路径: test_catid_17030000.json
+[2026-03-15 22:15:11] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:15:11] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:15:13] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:13] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937525056
+[2026-03-15 22:15:13] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937525056
+[2026-03-15 22:15:14] [OzonApi] INFO - 开始上传商品，文件路径: test_catid_17040000.json
+[2026-03-15 22:15:14] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:15:14] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:15:15] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:15] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937525240
+[2026-03-15 22:15:15] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937525240
+[2026-03-15 22:15:32] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:15:33] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:35] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:36] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:15:37] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:16:00] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:16:00] [OzonApi] INFO - 开始上传商品，文件路径: ozon_audit_upload.json
+[2026-03-15 22:16:00] [OzonApi] INFO - 成功读取 JSON 文件，包含 1 个商品
+[2026-03-15 22:16:00] [OzonApi] INFO - 正在向 Ozon 提交商品上传队列，当前队列数: 1
+[2026-03-15 22:16:02] [OzonApi] INFO - API 请求成功，状态码: 200
+[2026-03-15 22:16:02] [OzonApi] INFO - 上传任务接受成功！Ozon 队列 Task ID: 3937528393
+[2026-03-15 22:16:02] [OzonApi] INFO - 成功上传 1/1 个商品，Task ID: 3937528393
+[2026-03-15 22:16:08] [OzonApi] INFO - OzonApiManager 初始化完成，Client ID: 4030****
+[2026-03-15 22:16:10] [OzonApi] INFO - API 请求成功，状态码: 200

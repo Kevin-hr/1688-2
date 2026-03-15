@@ -212,9 +212,8 @@ class OzonApiManager:
         iterator = tqdm(products, desc="构建商品数据") if has_tqdm and show_progress else products
 
         for p in iterator:
-            # 1. 动态获取类目 ID (优先从 JSON 中获取自定义或建议类目)
-            # 如果 json 中有 custom_category_id 则使用，否则使用占位符
-            category_id = p.get("custom_category_id") or 17027484
+            # 1. 动态获取类目 ID
+            category_id = p.get("custom_category_id") or p.get("description_category_id") or 17027487
 
             # 2. 动态获取定价 (已经由 Transformer 计算好并由 auto_publish 可能覆写)
             price_rub = p.get("custom_price_rub") or p.get("price_rub", "1000")
@@ -240,9 +239,13 @@ class OzonApiManager:
                 "category_id": int(category_id),
                 "type_id": int(category_id), # 新版 API 必需字段
                 "images": p.get("images", [])[:10],
-                "description_category_id": int(category_id),
-                "attributes": p.get("attributes_mapped_api", []) # 预留属性注入口
             }
+
+            # 只有在 category_id 有效时才添加 description_category_id
+            if int(category_id) > 0:
+                item["description_category_id"] = int(category_id)
+
+            item["attributes"] = p.get("attributes_mapped_api", [])  # 预留属性注入口
             items.append(item)
 
         payload = {

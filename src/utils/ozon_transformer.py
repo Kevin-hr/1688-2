@@ -113,9 +113,15 @@ class OzonTransformer:
         "狗": "Pet Supplies / Dog Toys",
         "宠物": "Pet Supplies",
         "玩具": "Toys & Games",
-        "球": "Sports & Outdoors / Balls",
-        "手机": "Electronics / Mobile Phones",
-        "耳机": "Electronics / Headphones",
+    }
+
+    # 对应 Ozon 的 description_category_id
+    CATEGORY_ID_MAP = {
+        "Pet Supplies / Cat Toys": 17027487, # 映射到 Pet Products
+        "Pet Supplies / Dog Toys": 17027487,
+        "Pet Supplies": 17027487,
+        "Toys & Games": 17028973,           # 映射到 Toys
+        "General": 17027487,                # 默认值
     }
 
     def __init__(self):
@@ -218,9 +224,12 @@ class OzonTransformer:
         # 截断（考虑到 Python 字符串切片语法，使用 int 索引避免 lint 报错）
         clean_res = title.strip()
         if len(clean_res) > max_length:
-            clean_res = clean_res[0:max_length]
+            return clean_res[:max_length]
             
-        return clean_res if len(clean_res) > 5 else raw_title[0:min(len(raw_title), max_length)]
+        if len(clean_res) > 5:
+            return clean_res
+        else:
+            return raw_title[:min(len(raw_title), max_length)]
 
     def convert_units(self, attributes: dict) -> dict:
         """
@@ -361,10 +370,13 @@ class OzonTransformer:
 
         # 8. 自动推断 Ozon 品类
         suggested_category = "General"
-        for keyword, category in self.CATEGORY_KEYWORDS.items():
-            if keyword in raw_title:
-                suggested_category = category
+        for keyword_c, category_c in self.CATEGORY_KEYWORDS.items():
+            if keyword_c in raw_title:
+                suggested_category = category_c
                 break
+
+        # 8b. 获取对应的数字 ID
+        ozon_category_id = self.CATEGORY_ID_MAP.get(suggested_category, 17027487)
 
         # 9. 构造 Ozon API 标准属性列表 (Complex Attributes)
         # Ozon 要求属性以 {"complex_id": 0, "id": xxx, "values": [{"value": "xxx"}]} 格式提交
@@ -411,6 +423,7 @@ class OzonTransformer:
 
             # ---- 分类 ----
             "suggested_ozon_category": suggested_category,
+            "description_category_id": ozon_category_id,
 
             # ---- 图片 ----
             "images": product.get("images", []),
