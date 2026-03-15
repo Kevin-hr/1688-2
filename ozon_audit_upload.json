@@ -1,0 +1,34 @@
+{
+  "products": [
+    {
+      "offer_id": "1688-952473803779-AUDIT",
+      "name": "Игрушка-головоломка для кошек Xuetuan, лабиринт из фетра с мячиком и колокольчиком",
+      "name_en": "Xuetuan Cat Puzzle Maze Toy, Felt Box with Ball and Bell",
+      "name_cn": "雪团猫咪益智迷宫掏洞毛毡盒子逗猫铃铛球",
+      "price": "499",
+      "old_price": "899",
+      "premium_price": "450",
+      "currency": "RUB",
+      "category_id": 123456,
+      "type_id": 123456,
+      "images": [
+        "https://cbu01.alicdn.com/img/ibank/2020/428/378/22185873824_536529798.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01Oe95Hy1dUyLWS72Yh_!!4611686018427384508-0-item_pic.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01AFYxs31dUyLUe1zf5_!!2214127063740.jpg",
+        "https://cbu01.alicdn.com/img/ibank/O1CN01jBYJNz1dUyLWRKVGz_!!2214127063740.jpg"
+      ],
+      "attributes": [
+        { "id": 8229, "values": [{ "value": "Felt" }] },
+        { "id": 31, "values": [{ "value": "Xuetuan" }] },
+        { "id": 4389, "values": [{ "value": "China" }] }
+      ],
+      "weight": 1000,
+      "weight_unit": "g",
+      "dimension_unit": "mm",
+      "depth": 250,
+      "width": 250,
+      "height": 60,
+      "vat": "0"
+    }
+  ]
+}

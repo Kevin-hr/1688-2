@@ -1,0 +1,4 @@
+- [ ] `src/agents/components/ai_navigator.py` 文件已创建且包含 `solve_captcha` 方法。
+- [ ] `WebScraperAgent` 能够识别页面上的验证码特征。
+- [ ] 当触发验证码逻辑时，控制台能打印 "Switching to AI Mode..." 日志。
+- [ ] 拟人化鼠标轨迹生成函数能够输出非线性的坐标列表。

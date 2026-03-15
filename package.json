@@ -1,0 +1,34 @@
+{
+  "name": "1688-2",
+  "version": "1.0.0",
+  "description": "> 高效的 1688.com 电商自动化商品检索、数据采集与 **Ozon Global 上架** 工具，由 OpenClaw LLM 驱动。",
+  "main": "test_stealth.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kevin-hr/1688-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Kevin-hr/1688-2/issues"
+  },
+  "homepage": "https://github.com/Kevin-hr/1688-2#readme",
+  "dependencies": {
+    "puppeteer": "^24.39.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-user-data-dir": "^2.4.1",
+    "puppeteer-extra-plugin-user-preferences": "^2.4.1",
+    "selenium": "^2.20.0",
+    "undetected-chrome-drive": "^4.3.0",
+    "undetected-chromedriver": "^0.0.1-security"
+  }
+}
