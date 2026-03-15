@@ -54,7 +54,7 @@ class UnitConverter:
         尺寸转换为毫米
 
         Args:
-            value: 字符串形式的尺寸，如 "10cm", "100mm", "10"
+            value: 字符串形式的尺寸，如 "10cm", "100mm", "0.5m", "10"
 
         Returns:
             毫米为单位的浮点数
@@ -65,6 +65,11 @@ class UnitConverter:
             return 0.0
 
         value_str = str(value).strip().lower()
+
+        # 匹配 m (米) - 需要放在 cm 之前匹配
+        m_match = re.search(r"([\d.]+)\s*m(?!m)", value_str)
+        if m_match:
+            return float(m_match.group(1)) * 1000
 
         # 匹配 cm
         cm_match = re.search(r"([\d.]+)\s*cm", value_str)

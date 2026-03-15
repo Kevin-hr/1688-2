@@ -238,6 +238,7 @@ class OzonApiManager:
                 "price": str(price_rub),
                 "vat": "0",             # 默认设为 0 (免税)
                 "category_id": int(category_id),
+                "type_id": int(category_id), # 新版 API 必需字段
                 "images": p.get("images", [])[:10],
                 "description_category_id": int(category_id),
                 "attributes": p.get("attributes_mapped_api", []) # 预留属性注入口
@@ -276,3 +277,67 @@ class OzonApiManager:
             error_msg = f"网络连接或接口调取遇到严重异常: {e}"
             self.logger.error(error_msg)
             raise OzonApiError(error_msg)
+
+    def get_task_status(self, task_id: int) -> dict:
+        """
+        获取上传任务的详细状态信息。
+
+        参数:
+            task_id (int): Ozon 返回的任务 ID
+
+        返回:
+            dict: 包含状态信息的字典
+        """
+        endpoint = f"{self.base_url}/v1/product/import/info"
+        payload = {"task_id": int(task_id)}
+        
+        try:
+            resp_data = self._make_request(endpoint, payload)
+            return resp_data.get("result", {})
+        except Exception as e:
+            self.logger.error(f"获取任务状态失败: {e}")
+            return {}
+
+    def poll_task_status(self, task_id: int, interval: int = 5, timeout: int = 60) -> dict:
+        """
+        轮询任务状态，直到完成或超时。
+
+        参数:
+            task_id (int): 任务 ID
+            interval (int): 轮询间隔（秒）
+            timeout (int): 超时时间（秒）
+
+        返回:
+            dict: 最终的状态信息
+        """
+        import time
+        start_time = time.time()
+        
+        self.logger.info(f"开始轮询 Task {task_id} 状态，间隔 {interval}s，超时 {timeout}s")
+        
+        while time.time() - start_time < timeout:
+            status_info = self.get_task_status(task_id)
+            items = status_info.get("items", [])
+            
+            if not items:
+                self.logger.warning(f"Task {task_id} 未返回任何商品状态")
+                time.sleep(interval)
+                continue
+                
+            # 检查是否所有商品都有最终状态
+            # status 常值: "pending", "imported", "failed"
+            all_ready = True
+            for item in items:
+                if item.get("status") == "pending":
+                    all_ready = False
+                    break
+            
+            if all_ready:
+                self.logger.info(f"Task {task_id} 处理完成")
+                return status_info
+                
+            self.logger.info(f"Task {task_id} 处理中... (已耗时 {int(time.time() - start_time)}s)")
+            time.sleep(interval)
+            
+        self.logger.warning(f"Task {task_id} 状态轮询超时")
+        return self.get_task_status(task_id)

@@ -1,0 +1,53 @@
+{
+  "real_product": true,
+  "compliant": true,
+  "visual_proof": "1688_products\\猫玩具自嗨解闷神器小猫宠物猫咪益智迷宫掏洞毛毡盒子逗猫铃铛球\\scrape_visual_proof.png",
+  "data": {
+    "offer_id": "1688-952473803779",
+    "name": "Игрушка для кошек, рельефный артефакт, котенок, домашнее животное, кошка, головоломка, лабиринт, отверстие, фетровая коробка, забавный кот, колокольчик, шар",
+    "name_en": "Cat toy self-pleasure relief artifact kitten pet cat puzzle maze hole hole felt box funny cat bell ball",
+    "name_cn": "猫玩具自嗨解闷神器小猫宠物猫咪益智迷宫掏洞毛毡盒子逗猫铃铛球",
+    "name_raw_1688": "猫玩具自嗨解闷神器小猫宠物猫咪益智迷宫掏洞毛毡盒子逗猫铃铛球",
+    "price_cny": 11.8,
+    "price_rub": "433",
+    "weight_g": 200,
+    "depth_mm": 150,
+    "width_mm": 100,
+    "height_mm": 50,
+    "suggested_ozon_category": "Pet Supplies / Cat Toys",
+    "images": [],
+    "attributes_mapped": {
+      "brand": "雪团",
+      "material": "毛毡"
+    },
+    "attributes_unmapped": {},
+    "attributes_mapped_api": [
+      {
+        "id": 8229,
+        "values": [
+          {
+            "value": "毛毡"
+          }
+        ]
+      },
+      {
+        "id": 31,
+        "values": [
+          {
+            "value": "雪团"
+          }
+        ]
+      },
+      {
+        "id": 4389,
+        "values": [
+          {
+            "value": "China"
+          }
+        ]
+      }
+    ],
+    "source_url_1688": "https://detail.1688.com/offer/952473803779.html",
+    "vat": "0"
+  }
+}

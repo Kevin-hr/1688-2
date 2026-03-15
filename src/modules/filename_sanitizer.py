@@ -11,10 +11,18 @@ class FilenameSanitizer:
     清洗文件名中的非法字符，确保跨平台可用
 
     Windows 不允许: \ / * ? : " < > |
+    Windows 保留名: CON, PRN, AUX, NUL, COM1-9, LPT1-9
     """
 
     # Windows 非法字符
     ILLEGAL_CHARS = r'[\\/*?:"<>|]'
+
+    # Windows 保留名（不区分大小写）
+    RESERVED_NAMES = {
+        'CON', 'PRN', 'AUX', 'NUL',
+        'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
+        'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9',
+    }
 
     def __init__(self, max_length: int = 200):
         """
@@ -43,6 +51,11 @@ class FilenameSanitizer:
 
         # 移除多余空格
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+        # 检测 Windows 保留名（如 NUL, CON, PRN 等）
+        name_without_ext = cleaned.split('.')[0].upper()
+        if name_without_ext in self.RESERVED_NAMES:
+            cleaned = f"file_{cleaned}"
 
         # 截断长度
         if len(cleaned) > self.max_length:

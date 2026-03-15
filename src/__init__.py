@@ -63,7 +63,7 @@ from src.modules import (
     ExcelStyler, get_styler, Colors,
 )
 
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 
 __all__ = [
     # 统一API

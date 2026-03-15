@@ -18,10 +18,10 @@ v1.3.0 改进：
           └── ...          — 最多5张
 """
 
-import os        # 操作系统接口，用于目录创建和路径拼接
+import os  # 操作系统接口，用于目录创建和路径拼接
 import requests  # HTTP 请求库，用于下载图片
-import re        # 正则表达式，用于过滤文件名中的非法字符
-import time      # 时间库，用于重试间隔
+import re  # 正则表达式，用于过滤文件名中的非法字符
+import time  # 时间库，用于重试间隔
 from concurrent.futures import ThreadPoolExecutor, as_completed  # 多线程并行下载
 
 
@@ -34,10 +34,10 @@ class FileManager:
     """
 
     # 多线程下载配置
-    MAX_DOWNLOAD_WORKERS = 5    # 并行下载线程数
-    MAX_RETRIES = 3             # 最大重试次数
-    RETRY_BASE_DELAY = 1.0      # 重试基础延迟（秒），实际延迟 = base * 2^attempt
-    DOWNLOAD_TIMEOUT = 15       # 单张图片下载超时（秒）
+    MAX_DOWNLOAD_WORKERS = 5  # 并行下载线程数
+    MAX_RETRIES = 3  # 最大重试次数
+    RETRY_BASE_DELAY = 1.0  # 重试基础延迟（秒），实际延迟 = base * 2^attempt
+    DOWNLOAD_TIMEOUT = 15  # 单张图片下载超时（秒）
 
     def __init__(self, base_path="1688_products"):
         """
@@ -94,12 +94,16 @@ class FileManager:
 
     def _download_single_image(self, url, folder, filename, retries=None):
         """
-        下载单张图片，带指数退避重试机制。
+        下载单张图片，带指数退避重试机制和内容验证。
 
         重试策略：
           - 第1次失败 → 等待 1 秒后重试
           - 第2次失败 → 等待 2 秒后重试
           - 第3次失败 → 放弃，返回失败
+
+        验证：
+          - 检查文件大小（< 5KB 视为无效图片）
+          - 检查图片文件头（JPEG: FFD8, PNG: 8950）
 
         参数:
             url:      图片 HTTPS URL
@@ -119,9 +123,36 @@ class FileManager:
                 response = requests.get(url, timeout=self.DOWNLOAD_TIMEOUT)
 
                 if response.status_code == 200:
+                    # 检查内容是否有效
+                    content = response.content
+                    if len(content) < 5120:  # 小于 5KB 可能是占位图
+                        last_error = f"文件太小 ({len(content)} bytes)，疑似无效图片"
+                        if attempt < retries:
+                            delay = self.RETRY_BASE_DELAY * (2**attempt)
+                            print(
+                                f"[Downloader] ⚠️ {filename} {last_error}，{delay:.0f}秒后重试 ({attempt + 1}/{retries})"
+                            )
+                            time.sleep(delay)
+                            continue
+                        return (filename, False, last_error)
+
+                    # 检查文件头魔数
+                    if len(content) >= 2:
+                        magic = content[:2]
+                        if magic not in [b"\xff\xd8", b"\x89\x50"]:  # JPEG 或 PNG
+                            last_error = f"无效图片格式: {magic.hex()}"
+                            if attempt < retries:
+                                delay = self.RETRY_BASE_DELAY * (2**attempt)
+                                print(
+                                    f"[Downloader] ⚠️ {filename} {last_error}，{delay:.0f}秒后重试 ({attempt + 1}/{retries})"
+                                )
+                                time.sleep(delay)
+                                continue
+                            return (filename, False, last_error)
+
                     filepath = os.path.join(folder, filename)
                     with open(filepath, "wb") as f:
-                        f.write(response.content)
+                        f.write(content)
                     return (filename, True, None)
                 else:
                     last_error = f"HTTP {response.status_code}"
@@ -135,8 +166,10 @@ class FileManager:
 
             # 指数退避：delay = base × 2^attempt
             if attempt < retries:
-                delay = self.RETRY_BASE_DELAY * (2 ** attempt)
-                print(f"[Downloader] ⚠️ {filename} 下载失败({last_error})，{delay:.0f}秒后重试 ({attempt+1}/{retries})")
+                delay = self.RETRY_BASE_DELAY * (2**attempt)
+                print(
+                    f"[Downloader] ⚠️ {filename} 下载失败({last_error})，{delay:.0f}秒后重试 ({attempt + 1}/{retries})"
+                )
                 time.sleep(delay)
 
         return (filename, False, last_error)
@@ -180,7 +213,9 @@ class FileManager:
             print("[Downloader] 无图片需要下载。")
             return (0, 0)
 
-        print(f"[Downloader] 开始并行下载 {total} 张图片（{self.MAX_DOWNLOAD_WORKERS} 线程）...")
+        print(
+            f"[Downloader] 开始并行下载 {total} 张图片（{self.MAX_DOWNLOAD_WORKERS} 线程）..."
+        )
 
         success_count = 0
         fail_count = 0
@@ -203,7 +238,9 @@ class FileManager:
                     fname, ok, error = future.result()
                     if ok:
                         success_count += 1
-                        print(f"[Downloader] ✅ ({success_count}/{total}) {fname} 下载成功")
+                        print(
+                            f"[Downloader] ✅ ({success_count}/{total}) {fname} 下载成功"
+                        )
                     else:
                         fail_count += 1
                         print(f"[Downloader] ❌ {fname} 最终失败: {error}")
@@ -239,4 +276,4 @@ class FileManager:
             f.write(f"**价格**: {details.get('price', 'N/A')}\n")
             f.write(f"**来源链接**: {details.get('url', 'N/A')}\n\n")
             f.write("## 详细描述/规格属性\n")
-            f.write(details.get('description', '暂无详细描述。'))
+            f.write(details.get("description", "暂无详细描述。"))

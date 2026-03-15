@@ -105,39 +105,30 @@ class WebScraperAgent:
     ]
 
     # ------------------------------------------------------------------ #
-    # 详情页 — 属性行选择器（组合查询，针对 2026 版增强）
+    # 详情页 — 属性行选择器（2026版1688 DOM结构）
     # ------------------------------------------------------------------ #
     ATTRIBUTE_ROW_SELECTOR = (
-        ".prop-item, .attribute-item, .obj-content, "
-        ".offer-attr-item, .detail-attribute-item, "
-        ".attrs-item, .de-attr-item, "
-        "div[class*='attribute-item'], li[class*='prop-item'], "
-        ".pc-detail-property-item, .od-pc-attribute-item" # 2026 最新类名
+        # 尝试通用的属性选择器
+        "div[class*='attribute'], div[class*='specification'], "
+        "div[class*='property'], div[class*='attr'], "
+        # 查找table或tr
+        "table.attr-table tr, .spec-list tr, .property-list li"
     )
     ATTRIBUTE_NAME_SELECTOR = (
-        ".prop-name, .attribute-name, .obj-title, .attr-name, .attrs-name, "
-        "span[class*='name'], div[class*='title'], "
-        ".pc-detail-property-label"
+        "td:first-child, th, .label, .attr-label, div[class*='label']"
     )
     ATTRIBUTE_VALUE_SELECTOR = (
-        ".prop-value, .attribute-value, .obj-desc, .attr-value, .attrs-value, "
-        "span[class*='value'], div[class*='desc'], "
-        ".pc-detail-property-value"
+        "td:last-child, td:nth-child(2), .value, .attr-value, div[class*='value']"
     )
 
     # ------------------------------------------------------------------ #
-    # 详情页 — 图片选择器（针对 2026 版轮播图增强）
+    # 详情页 — 图片选择器（2026版1688 DOM结构优化）
     # ------------------------------------------------------------------ #
     IMAGE_SELECTOR = (
-        ".tab-trigger img, "  # PC 端轮播选项卡图片
-        ".detail-gallery-img, "  # 详情页画廊图
-        ".swipe-image img, "  # 移动端滑动图片
-        ".slider-img img, "  # 滑块组件图片
-        ".main-image img, "  # 2026 版主图容器
-        ".gallery-image img, "
-        "div[class*='image-view'] img, "
-        "ul[class*='nav-tabs'] img, "
-        ".mod-detail-gallery img" # 容器级回退
+        # 直接选择所有img标签，然后过滤
+        "img[src*='alicdn'], "
+        "img[src*='alibaba'], "
+        "img[src*='cbu01']"
     )
 
     # ------------------------------------------------------------------ #
@@ -147,7 +138,7 @@ class WebScraperAgent:
     NAV_TIMEOUT_MS = 30000  # 页面导航超时（毫秒）
     MIN_COURTESY_DELAY = 1.0  # 最短礼貌延迟（秒），模拟人类操作节奏
 
-    def __init__(self, save_path="1688_products", user_data_dir=".openclaw/user_data"):
+    def __init__(self, save_path="1688_products", user_data_dir=".openclaw/user_data", headless=True):
         """
         初始化采集 Agent。
 
@@ -156,8 +147,14 @@ class WebScraperAgent:
             user_data_dir: Playwright 持久化用户数据目录（存储登录 Cookie），
                            默认 '.openclaw/user_data'
         """
-        self.file_manager = FileManager(save_path)  # 初始化文件管理器
-        self.user_data_dir = user_data_dir  # Playwright 用户数据目录路径
+        self.file_manager = FileManager(base_path=save_path)  # 初始化文件管理器
+        self.user_data_dir = os.path.abspath(user_data_dir)  # Playwright 用户数据目录路径
+        self.headless = headless
+        
+        # 图片过滤黑名单 (不符合 Ozon 要求的格式或 UI 图标)
+        self.image_blacklist = [".svg", ".tps", "ali-logo", "favicon", "icon-", "loading", "logo"]
+        # 最小图片尺寸限制 (像素)，过滤掉小图标
+        self.min_image_size = 300 
 
         # 浏览器相关实例（在 start() 中初始化）
         self._playwright = None  # Playwright 实例
@@ -197,27 +194,65 @@ class WebScraperAgent:
         else:
             # 最基本的浏览器配置
             context_options = {}
-            launch_args = ["--disable-blink-features=AutomationControlled"]
+            launch_args = [
+                "--disable-blink-features=AutomationControlled",
+                "--disable-dev-shm-usage",
+                "--no-sandbox",
+            ]
             print("[Scraper] 使用基础配置（无反检测）")
 
-        # 使用配置创建浏览器上下文
+        # 优化：使用 headless=True + Stealth 模式提升稳定性
+        # 移除会导致连接不稳定的 headless=False
         self._context = await self._playwright.chromium.launch_persistent_context(
             user_data_dir=self.user_data_dir,
-            headless=True,  # 无头模式
+            headless=True,  # 改为无头模式，更稳定
             user_agent=context_options.get("user_agent"),
             viewport=context_options.get("viewport"),
             locale=context_options.get("locale"),
             timezone_id=context_options.get("timezone_id"),
             args=launch_args,
+            ignore_default_args=["--enable-automation"],  # 隐藏自动化特征
+            # 添加额外的稳定性参数
+            extra_http_headers={
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+            } if use_anti_detect else {},
         )
 
         self._page = await self._context.new_page()
 
-        # 注入反检测脚本（暂时禁用以测试浏览器稳定性）
-        # if use_anti_detect:
-        #     await self._page.add_init_script(anti_config.add_human_behavior(page=None)["script"])
+        # 启用反检测脚本注入
+        if use_anti_detect:
+            try:
+                await self._page.add_init_script("""
+                    // 修改 webdriver 属性
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    });
+                    // 修改 plugins
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => [1, 2, 3, 4, 5]
+                    });
+                    // 修改 languages
+                    Object.defineProperty(navigator, 'languages', {
+                        get: () => ['zh-CN', 'zh', 'en']
+                    });
+                    // 添加 chrome 对象
+                    window.chrome = {
+                        runtime: {}
+                    };
+                    // 修改 permissions 查询
+                    const originalQuery = window.navigator.permissions.query;
+                    window.navigator.permissions.query = (parameters) => (
+                        parameters.name === 'notifications' ?
+                        Promise.resolve({ state: Notification.permission }) :
+                        originalQuery(parameters)
+                    );
+                """)
+                print("[Scraper] ✅ 反检测脚本已注入")
+            except Exception as e:
+                print(f"[Scraper] ⚠️ 反检测脚本注入失败: {e}")
 
-        print("[Scraper] ✅ 浏览器已启动（反检测已启用）。")
+        print("[Scraper] ✅ 浏览器已启动（Stealth模式）")
 
     async def close(self):
         """
@@ -426,63 +461,72 @@ class WebScraperAgent:
                 # 随机延迟，模拟人类操作
                 await asyncio.sleep(random.uniform(1.5, 3.0))
 
-                # 1688 搜索接口要求关键词使用 GBK 编码（历史遗留编码格式）
-                # 1688 搜索接口使用 UTF-8 编码（2026年更新）
+                # 1688 搜索接口使用 UTF-8 编码
                 try:
                     encoded_kw = urllib.parse.quote(keyword, encoding="utf-8")
                 except Exception:
                     encoded_kw = urllib.parse.quote(keyword)  # 回退：默认 UTF-8
 
-                # 构造搜索 URL
-                search_url = (
-                    f"https://s.1688.com/youyuan/index.htm?tab=search&keywords={encoded_kw}"
-                )
+                # 构造搜索 URL - 使用多个备选URL策略
+                search_urls = [
+                    # 策略1: 有好货搜索（推荐）
+                    f"https://s.1688.com/youyuan/index.htm?tab=search&keywords={encoded_kw}",
+                    # 策略2: 搜索市场
+                    f"https://s.1688.com/youyuan/index.htm?tab=searchWeb&keywords={encoded_kw}",
+                    # 策略3: 直接搜索（兜底）
+                    f"https://s.1688.com/youyuan/msell.htm?keywords={encoded_kw}",
+                ]
 
-                # 拼接排序参数
-                if sort_type:
-                    search_url += f"&sortType={sort_type}"
+                # URL回退机制：尝试多个搜索URL
+                urls_found = False
+                for url_idx, search_url in enumerate(search_urls):
+                    # 拼接排序参数
+                    final_url = search_url
+                    if sort_type:
+                        final_url += f"&sortType={sort_type}"
 
-                print(f"[Scraper] 正在导航至搜索页: {search_url}")
-                await page.goto(
-                    search_url, wait_until="domcontentloaded", timeout=self.NAV_TIMEOUT_MS
-                )
+                    print(f"[Scraper] 尝试搜索URL {url_idx+1}/{len(search_urls)}: {final_url[:60]}...")
+                    await page.goto(
+                        final_url, wait_until="domcontentloaded", timeout=self.NAV_TIMEOUT_MS
+                    )
 
-                # 检测反爬（搜索结果页）
-                if await self._check_anti_bot_detection(page):
-                    if retry_round < max_retries - 1:
-                        print(f"[Scraper] 🔄 检测到反爬，正在重试 ({retry_round + 1}/{max_retries})...")
-                        await self._restart_with_new_fingerprint()
-                        page = self._page
+                    # 检测反爬（搜索结果页）
+                    if await self._check_anti_bot_detection(page):
+                        print(f"[Scraper] ⚠️ URL {url_idx+1} 触发反爬，尝试下一个...")
                         continue
+
+                    # 智能等待搜索结果出现
+                    print("[Scraper] 等待搜索结果渲染...")
+                    hit_selector = await self._smart_wait_for_any(
+                        page, self.SEARCH_ITEM_SELECTORS, timeout_ms=self.WAIT_TIMEOUT_MS
+                    )
+
+                    if not hit_selector:
+                        # 首次等待未命中 → 触发滚动后重试
+                        print("[Scraper] 首次等待未命中。正在滚动触发懒加载...")
+                        await self._scroll_and_wait(page, scroll_distance=1000)
+                        hit_selector = await self._smart_wait_for_any(
+                            page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
+                        )
+
+                    if not hit_selector:
+                        # 二次滚动（滚到底部）
+                        print("[Scraper] 仍未命中。尝试滚动到页面底部...")
+                        await self._scroll_and_wait(page, scroll_distance=0)
+                        hit_selector = await self._smart_wait_for_any(
+                            page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
+                        )
+
+                    if hit_selector:
+                        print(f"[Scraper] ✅ 使用URL {url_idx+1} 成功找到结果")
+                        urls_found = True
+                        break
                     else:
-                        print("[Scraper] ❌ 达到最大重试次数，放弃搜索")
-                        return []
+                        print(f"[Scraper] ⚠️ URL {url_idx+1} 无结果，尝试下一个...")
 
-                # 智能等待搜索结果出现（替代旧版 asyncio.sleep(5)）
-                print("[Scraper] 等待搜索结果渲染...")
-                hit_selector = await self._smart_wait_for_any(
-                    page, self.SEARCH_ITEM_SELECTORS, timeout_ms=self.WAIT_TIMEOUT_MS
-                )
-
-                if not hit_selector:
-                    # 首次等待未命中 → 触发滚动后重试
-                    print("[Scraper] 首次等待未命中。正在滚动触发懒加载...")
-                    await self._scroll_and_wait(page, scroll_distance=1000)
-                    hit_selector = await self._smart_wait_for_any(
-                        page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
-                    )
-
-                if not hit_selector:
-                    # 二次滚动（滚到底部）
-                    print("[Scraper] 仍未命中。尝试滚动到页面底部...")
-                    await self._scroll_and_wait(page, scroll_distance=0)
-                    hit_selector = await self._smart_wait_for_any(
-                        page, self.SEARCH_ITEM_SELECTORS, timeout_ms=8000
-                    )
-
-                if not hit_selector:
-                    # 全部策略失败 → 保存截图供人工诊断
-                    print("[Scraper] ❌ 未找到搜索结果。保存调试截图...")
+                if not urls_found:
+                    # 所有URL都失败
+                    print("[Scraper] ❌ 所有搜索URL均无结果，保存调试截图...")
                     await page.screenshot(path="debug_search_no_items.png")
                     return []
 
@@ -522,8 +566,6 @@ class WebScraperAgent:
                         ):
                             urls.append(href)
                             print(f"[Scraper] ✅ 链接已验证: {href}")
-                        else:
-                            print(f"[Scraper] ⚠️ 链接被过滤: {href[:60]}")
 
                 return urls
 
@@ -639,22 +681,71 @@ class WebScraperAgent:
                     except Exception:
                         continue
 
-                # ---- 提取商品主图列表 ----
+                # ---- 提取商品主图列表 (v1.3.4 精准映射) ----
                 image_urls = []
-                img_els = await page.query_selector_all(self.IMAGE_SELECTOR)
-                for img in img_els:
-                    src = await img.get_attribute("src")
-                    if src:
-                        # 替换缩略图后缀为高清版本
-                        src = src.replace(".60x60", ".400x400").replace(
-                            ".40x40", ".400x400"
-                        )
-                        if not src.startswith("http"):
-                            src = "https:" + src
-                        image_urls.append(src)
+                # 优先级 1: 新版响应式布局选择器 (.gallery-img, .gallery-thumbnail-item)
+                # 优先级 2: 旧版/稳定版选择器 (.od-gallery-)
+                # 优先级 3: 通用详情页主图选择器
+                gallery_selectors = [
+                    ".gallery-img img",
+                    ".gallery-img",
+                    ".gallery-thumbnail-item img",
+                    ".gallery-thumbnail-item",
+                    ".sku-item-image img",
+                    ".sku-item-image",
+                    ".od-gallery-container .od-gallery-item-wrapper img",
+                    ".od-gallery-container .od-gallery-image img",
+                    ".od-sku-item img",
+                    ".base-main-img img",
+                    ".tab-item img"
+                ]
+                
+                print(f"[Scraper] 正在提取高清大图...")
+                # 等待页面渲染完成
+                await page.wait_for_timeout(3000)
+                
+                for sel in gallery_selectors:
+                    try:
+                        els = await page.query_selector_all(sel)
+                        for img in els:
+                            src = await img.get_attribute("src")
+                            if not src:
+                                # 尝试从 style 中提取 background-image
+                                style = await img.get_attribute("style")
+                                if style and "background-image" in style:
+                                    import re
+                                    match = re.search(r'url\("?(.+?)"?\)', style)
+                                    if match:
+                                        src = match.group(1)
+                            
+                            if not src: continue
+                            
+                            # 过滤 UI 图标与黑名单
+                            if any(black in src.lower() for black in self.image_blacklist):
+                                continue
+                            
+                            # 1688 高清化处理：去掉缩略图尺寸后缀，强制请求大图
+                            # 例如: .32x32.jpg -> 改为 .800x800.jpg 或直接去掉
+                            import re
+                            src = re.sub(r"\.\d+x\d+.*\.jpg", ".jpg", src)
+                            src = re.sub(r"\.\d+x\d+.*\.png", ".png", src)
+                            
+                            if not src.startswith("http"):
+                                src = "https:" + src
+                                
+                            if src not in image_urls:
+                                image_urls.append(src)
+                    except Exception:
+                        continue
 
-                # 保序去重
+                # 只要确实是大图链接，不需要过严的长度限制，去重即可
                 image_urls = list(dict.fromkeys(image_urls))
+                print(f"[Scraper] 找到 {len(image_urls)} 张候选高清图")
+
+                # ---- 最终视觉存证截图 ----
+                product_dir, image_dir = self.file_manager.create_product_dir(title)
+                screenshot_proof = os.path.join(product_dir, "scrape_visual_proof.png")
+                await page.screenshot(path=screenshot_proof, full_page=False)
 
                 # ---- 组装商品信息字典 ----
                 product_info = {
@@ -662,7 +753,8 @@ class WebScraperAgent:
                     "price": price,
                     "url": url,
                     "attributes": attributes,
-                    "images": image_urls,
+                    "images": image_urls[:15], # 限制前15张高质量图
+                    "screenshot_proof": screenshot_proof,
                     "description": "\n".join(
                         [f"- **{k}**: {v}" for k, v in attributes.items()]
                     ),
